@@ -8,6 +8,7 @@ def main():
         default_scope=GuildIDs
     )
     bot.load("modify")
+    bot.load('interactions.ext.files')
     bot.start()
 
 
