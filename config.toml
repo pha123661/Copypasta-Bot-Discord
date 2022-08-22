@@ -1,0 +1,41 @@
+[SETTING]
+  LOG_FILE = "../log.log"
+  EXAMPLE_PIC_DIR = "./ExamplePics"
+  EXAMPLE_TXT_DIR = "./ExampleTxts"
+  [SETTING.TYPE]
+    TXT=1
+    IMG=2
+    ANI=3
+    VID=4
+  
+  [SETTING.NAME]
+    TXT="複製文"
+    IMG="圖片"
+    ANI="動圖"
+    VID="影片"
+  
+  [SETTING.CONCURRENT]
+    [SETTING.CONCURRENT.SUM]
+      COOLDOWN = 500 # default: 500 ms
+      LIMIT = 6 # default: 6
+    [SETTING.CONCURRENT.CAP]
+      COOLDOWN = 1000 # default: 1000 ms
+      LIMIT = 3 # default: 3
+    
+
+[API]
+  [API.TG]
+    TOKEN = "" # should be stored as environment variable
+  [API.HF]
+    TOKENs = [""] # should be stored as environment variable
+    SUM_MODEL = "csebuetnlp/mT5_multilingual_XLSum"
+    MT_MODEL = "Helsinki-NLP/opus-mt-en-zh" # not used, using google translation atm
+  [API.MONGO]
+    URI = ""# should be stored as environment variable
+[DB]
+  DB_NAME = ""
+  CFormat = "%d-Copypasta" # args = ChatID int64
+  
+  GLOBAL_COL = "0_GLOBAL-Copypasta"
+  CHAT_STATUS = "0_ChatStatus"
+  USER_STATUS = "0_UserStatus"
