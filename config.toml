@@ -13,18 +13,10 @@
     IMG="圖片"
     ANI="動圖"
     VID="影片"
-  
-  [SETTING.CONCURRENT]
-    [SETTING.CONCURRENT.SUM]
-      COOLDOWN = 500 # default: 500 ms
-      LIMIT = 6 # default: 6
-    [SETTING.CONCURRENT.CAP]
-      COOLDOWN = 1000 # default: 1000 ms
-      LIMIT = 3 # default: 3
     
 
 [API]
-  [API.TG]
+  [API.DC]
     TOKEN = "" # should be stored as environment variable
   [API.HF]
     TOKENs = [""] # should be stored as environment variable
