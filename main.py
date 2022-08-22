@@ -7,7 +7,7 @@ def main():
         token=CONFIG['API']['DC']['TOKEN'],
         default_scope=GuildIDs
     )
-    bot.load("utils.modify")
+    bot.load("modify")
     bot.start()
 
 

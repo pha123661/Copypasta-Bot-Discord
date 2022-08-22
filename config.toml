@@ -25,7 +25,8 @@
   [API.MONGO]
     URI = ""# should be stored as environment variable
 [DB]
-  DB_NAME = ""
+  DB_NAME = "" # should be stored as environment variable
+  GLOBAL_DB_NAME = "" # should be stored as environment variable
   CFormat = "%d-Copypasta" # args = ChatID int64
   
   GLOBAL_COL = "0_GLOBAL-Copypasta"
