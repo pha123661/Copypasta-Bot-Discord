@@ -22,7 +22,8 @@ Translator = googletrans.Translator()
 
 def GenerateJieba(keyword: str) -> set[str]:
     keyword = re.sub(f"[{punc}\n]+", "", keyword)
-    return {w for w in jieba.cut_for_search(keyword) if w not in stop_words}
+    ret = {w for w in jieba.cut_for_search(keyword)} - stop_words
+    return ret
 
 
 def TextSummarization(content: str) -> str:

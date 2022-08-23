@@ -8,6 +8,7 @@ def main():
         default_scope=GuildIDs
     )
     bot.load("commands_update")
+    bot.load("commands_retrieval")
     bot.load('interactions.ext.files')
     bot.start()
 

@@ -22,26 +22,25 @@ class commands_update(interactions.Extension):
     @interactions.option(description="關鍵字,不宜過長或重複")
     @interactions.option(description="複製文, 和圖片擇一傳送即可, 長度 < 6 的複製文不會生成摘要")
     @interactions.option(description="圖片, 和複製文擇一傳送即可")
-    @interactions.autodefer()
-    async def add(self, ctx: interactions.CommandContext, keyword: str, copypasta: str = None, media: interactions.api.models.message.Attachment = None):
+    async def add(self, ctx: interactions.CommandContext, keyword: str, content: str = None, media: interactions.api.models.message.Attachment = None):
         """新增複製文"""
-        if copypasta is None and media is None:
+        if content is None and media is None:
             await ctx.send("新增失敗：請給我複製文或圖片", ephemeral=True)
             return
         if not 2 <= len(keyword) <= 30:
             await ctx.send(f"新增失敗：關鍵字長度需介於 2~30 字, 目前爲{len(keyword)}字", ephemeral=True)
             return
-        if (copypasta is not None) and not (1 <= len(copypasta) <= 1900):
-            await ctx.send(f"新增失敗：內容長度需介於1~1900字, 目前爲{len(copypasta)}字", ephemeral=True)
+        if (content is not None) and not (1 <= len(content) <= 1900):
+            await ctx.send(f"新增失敗：內容長度需介於1~1900字, 目前爲{len(content)}字", ephemeral=True)
             return
 
         # preprocess
         if media is None:
             # text
             Type = CONFIG['SETTING']['TYPE']['TXT']
-            Content = copypasta
+            Content = content
             URL = ""
-            FileUniqueID = sha256(copypasta.encode()).hexdigest()
+            FileUniqueID = sha256(content.encode()).hexdigest()
 
         else:
             # image
@@ -76,12 +75,14 @@ class commands_update(interactions.Extension):
 
         # insert
         if Type == CONFIG['SETTING']['TYPE']['TXT']:
-            if len(keyword) <= 5:
+            if len(content) <= 5:
                 Summarization = ""
             else:
+                await ctx.defer()
                 Summarization = TextSummarization(Content)
 
         elif Type == CONFIG['SETTING']['TYPE']['IMG']:
+            await ctx.defer()
             Summarization = ImageCaptioning(encoded_image)
 
         Rst = InsertHTB(Col, {
@@ -99,12 +100,11 @@ class commands_update(interactions.Extension):
             # success
             if Type == CONFIG['SETTING']['TYPE']['TXT']:
                 if not Summarization == "":
-                    await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:「{Content}」')
+                    await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:\n{Content}')
                 else:
-                    await ctx.send(f'新增「{keyword}」成功\n未生成摘要\n內容:「{Content}」')
+                    await ctx.send(f'新增「{keyword}」成功\n未生成摘要\n內容:\n{Content}')
             else:
-                await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」')
-                await ctx.send(media.proxy_url)
+                await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:\n{media.proxy_url}')
         else:
             # failed
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')
@@ -184,6 +184,12 @@ class commands_update(interactions.Extension):
                 custom_id='deletion_cancel',
             )
         ))
+
+    @interactions.extension_component("deletion_cancel")
+    async def deletion_candel(self, ctx: interactions.CommandContext):
+        if ctx.guild_id in self.QueuedDeletes:
+            del self.QueuedDeletes[ctx.guild_id]
+        await ctx.send("我其實不會把按鈕關掉 沒按也沒差 笑死")
 
     @interactions.extension_component("deletion")
     async def deletion_handler(self, ctx: interactions.CommandContext):
