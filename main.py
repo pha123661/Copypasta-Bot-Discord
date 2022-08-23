@@ -7,7 +7,7 @@ def main():
         token=CONFIG['API']['DC']['TOKEN'],
         default_scope=GuildIDs
     )
-    bot.load("modify")
+    bot.load("commands_update")
     bot.load('interactions.ext.files')
     bot.start()
 

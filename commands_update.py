@@ -3,7 +3,6 @@ import pymongo
 import requests
 import base64
 import asyncio
-from pprint import pprint
 from hashlib import sha256
 from bson.objectid import ObjectId
 
@@ -14,7 +13,7 @@ from database import DB, GLOBAL_COL, InsertHTB
 from vlp import TextSummarization, ImageCaptioning
 
 
-class ModifyingCommands(interactions.Extension):
+class commands_update(interactions.Extension):
     def __init__(self, client) -> None:
         self.client: interactions.Client = client
         self.QueuedDeletes = dict()
@@ -223,4 +222,4 @@ class ModifyingCommands(interactions.Extension):
 
 
 def setup(client):
-    ModifyingCommands(client)
+    commands_update(client)
