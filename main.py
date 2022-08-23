@@ -9,6 +9,7 @@ def main():
     )
     bot.load("commands_update")
     bot.load("commands_retrieval")
+    bot.load("commands_public")
     bot.load('interactions.ext.files')
     bot.start()
 

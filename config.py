@@ -1,7 +1,6 @@
 import os
-from pprint import pprint
-
 import toml
+from pprint import pprint
 
 
 def InitConfig(path: str) -> dict:
@@ -18,8 +17,8 @@ def InitConfig(path: str) -> dict:
     return config
 
 
-def GetColNameByGuildID(GuildID):
-    return CONFIG['DB']['CFormat'] % (GuildID)
+def GetColNameByGuildID(GuildID: int):
+    return CONFIG['DB']['CFormat'] % GuildID
 
 
 CONFIG = InitConfig("./config.toml")

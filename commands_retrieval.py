@@ -3,9 +3,7 @@ import pymongo
 import random
 
 import config
-from config import CONFIG
-from utils import ChatStatus
-from database import DB, GLOBAL_COL, InsertHTB
+from database import DB, GLOBAL_COL, ChatStatus
 from vlp import GenerateJieba
 
 
@@ -21,14 +19,14 @@ class commands_update(interactions.Extension):
             random_idx = random.randint(0, CN - 1)  # [0, CN)
             doc = col.find_one(skip=random_idx)
             if doc is not None:
-                await ctx.send(f"幫你從{CN}篇中選擇了:\n{doc['Content']}")
+                await ctx.send(f"幫你從{CN}篇中精心選擇了:\n{doc['Content']}")
             else:
                 await ctx.send('發生錯誤')
 
-        if ChatStatus[ctx.guild_id].Global:
+        if ChatStatus[int(ctx.guild_id)].Global:
             col = GLOBAL_COL
         else:
-            col = DB[config.GetColNameByGuildID(ctx.guild_id)]
+            col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
 
         CN = col.estimated_document_count()
         if CN == 0:
@@ -43,10 +41,10 @@ class commands_update(interactions.Extension):
     @interactions.option(description="搜尋關鍵字")
     async def search(self, ctx: interactions.CommandContext, query: str):
         """在資料庫的 “摘要” “關鍵字” 和 “內容” 中進行搜尋"""
-        if ChatStatus[ctx.guild_id].Global:
+        if ChatStatus[int(ctx.guild_id)].Global:
             col = GLOBAL_COL
         else:
-            col = DB[config.GetColNameByGuildID(ctx.guild_id)]
+            col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
         Curser = col.find(filter={"Type": {"$ne": 0}}).sort(
             "Type", pymongo.ASCENDING)
 
@@ -69,6 +67,7 @@ class commands_update(interactions.Extension):
 
         await ctx.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆, 請查看與 bot 的私訊")
         await ctx.author.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆")
+        Curser.close()
 
 
 def setup(client):
