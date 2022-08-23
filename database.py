@@ -54,10 +54,20 @@ def InitDB() -> tuple[pymongo.database.Database, pymongo.database.Database]:
             continue
         GLOBAL_DB.create_collection(ColName)
 
-    GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].create_index(
-        [("GuildID", pymongo.ASCENDING)], unique=True)
-    GLOBAL_DB[CONFIG['DB']['USER_STATUS']].create_index(
-        [("DCUserID", pymongo.ASCENDING), ("TGUserID", pymongo.ASCENDING)], unique=True)
+    GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].create_indexes([
+        pymongo.IndexModel("GuildID"),
+        pymongo.IndexModel("ChatID"),
+        pymongo.IndexModel([("GuildID", pymongo.ASCENDING),
+                            ('ChatID', pymongo.ASCENDING)],
+                           unique=True),
+    ])
+    GLOBAL_DB[CONFIG['DB']['USER_STATUS']].create_indexes([
+        pymongo.IndexModel("DCUserID"),
+        pymongo.IndexModel("TGUserID"),
+        pymongo.IndexModel([("DCUserID", pymongo.ASCENDING),
+                            ('TGUserID', pymongo.ASCENDING)],
+                           unique=True),
+    ])
     GLOBAL_DB[CONFIG['DB']['GLOBAL_COL']].create_indexes([
         pymongo.IndexModel("Type"),
         pymongo.IndexModel([("Type", pymongo.ASCENDING),
@@ -140,7 +150,7 @@ async def GetMaskedNameByID(client, DCUserID: int) -> str:
             doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']
                             ].find_one({"TGUserID": DCUserID})
             if doc is not None and 'DCUserID' in doc:
-                return await    GetName(client, doc['DCUserID'])
+                return await GetName(client, doc['DCUserID'])
             return "Telegram 用戶", False
         return ret, True
     Name, NeedMask = await GetName(client, DCUserID)
