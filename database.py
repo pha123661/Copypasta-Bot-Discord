@@ -22,14 +22,16 @@ type HokTseBun struct {
 
 
 class ChatStatusEntity:
-    def __init__(self, GuildID: int, Global: bool = False) -> None:
+    def __init__(self, GuildID: int, ChatID: int = None, Global: bool = False) -> None:
         self.GuildID: int = GuildID
+        self.ChatID: int = ChatID
         self.Global: int = Global
 
 
 class UserStatusEntity:
-    def __init__(self, DCUserID: int, Contribution: int = 0, Banned: bool = False) -> None:
+    def __init__(self, DCUserID: int, TGUserID: int = None, Contribution: int = 0, Banned: bool = False) -> None:
         self.DCUserID: int = DCUserID
+        self.TGUserID: int = TGUserID
         self.Contribution: int = Contribution
         self.Banned: bool = Banned
 
@@ -84,15 +86,21 @@ def InitDB() -> tuple[pymongo.database.Database, pymongo.database.Database]:
 def BuildCache():
     ChatStatus = keydefaultdict(ChatStatusEntity)
     for doc in GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
+        if 'GuildID' not in doc:
+            continue
         ChatStatus[doc['GuildID']] = ChatStatusEntity(
             GuildID=doc.get('GuildID'),
+            ChatID=doc.get('ChatID'),
             Global=doc.get('Global'),
         )
 
     UserStatus = keydefaultdict(UserStatusEntity)
     for doc in GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
+        if 'DCUserID' not in doc:
+            continue
         UserStatus[doc['DCUserID']] = UserStatusEntity(
             DCUserID=doc.get('DCUserID'),
+            TGUserID=doc.get('TGUserID'),
             Contribution=doc.get('Contribution'),
             Banned=doc.get('Banned'),
         )

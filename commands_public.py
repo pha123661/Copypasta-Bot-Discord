@@ -14,6 +14,11 @@ class commands_public(interactions.Extension):
         self.client: interactions.Client = client
 
     @interactions.extension_command()
+    @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 輸入 /UserID 以取得")
+    async def link_telegram(self, ctx: interactions.CommandContext, UserID: int):
+        """和 Telegram 使用者進行連接, 可共享貢獻值"""
+
+    @interactions.extension_command()
     async def toggle(self, ctx: interactions.CommandContext):
         """在 私人模式 和 公共模式 之間切換"""
         GuildID = int(ctx.guild_id)
@@ -31,7 +36,8 @@ class commands_public(interactions.Extension):
 1. 這裡的資料庫是所有人共享的
 2. 只能刪除自己新增的東西
 3. 我不想管裡面有啥 但你亂加東西讓我管 我就ban你
-4. 可以再次使用 /toggle 來退出"""
+4. 可以再次使用 /toggle 來退出
+5. 公共資料庫的內容和 Telegram 版本是共享的"""
             await ctx.send(content)
         UserID = int(ctx.author.id)
         # private -> public
