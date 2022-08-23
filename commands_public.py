@@ -1,10 +1,11 @@
 import interactions
 import pymongo
-import random
+from pprint import pprint
+from datetime import datetime, timezone
 
 import config
 from config import CONFIG
-from database import DB, GLOBAL_COL, UpdateChatStatus, ChatStatus, ChatStatusEntity, UserStatus, UserStatusEntity, GetLBInfo
+from database import *
 from vlp import GenerateJieba
 
 
@@ -52,6 +53,36 @@ class commands_public(interactions.Extension):
             await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 公共模式\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
         else:
             await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 私人模式\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
+
+    @interactions.extension_command()
+    async def dump(self, ctx: interactions.CommandContext):
+        """將目前私人資料庫內由**自己**新增的內容複製到公共資料庫"""
+        await ctx.defer()
+        GuildID = int(ctx.guild_id)
+        DCUserID = int(ctx.author.id)
+        source_col = DB[config.GetColNameByGuildID(GuildID)]
+        target_col = GLOBAL_COL
+
+        filter = {"From": DCUserID}
+        cursor = source_col.find(
+            filter=filter, cursor_type=pymongo.CursorType.EXHAUST)
+        docs2insert = list()
+        for doc in cursor:
+            del doc['_id']
+            doc['CreateTime'] = datetime.now(timezone.utc)
+            docs2insert.append(doc)
+        if len(docs2insert) == 0:
+            await ctx.send("傾卸失敗: 沒有東西能傾卸")
+            return
+
+        try:
+            MRst = target_col.insert_many(docs2insert, ordered=False)
+            con = len(MRst.inserted_ids)
+        except pymongo.errors.BulkWriteError as bwe:
+            con = bwe.details['nInserted']
+
+        Newcon = AddContribution(DCUserID, con)
+        await ctx.send(f"成功把{con}坨大便倒進公共資料庫, {'倒了個寂寞, 'if con == 0 else ''}目前累計貢獻{Newcon}坨")
 
 
 def setup(client):

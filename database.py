@@ -73,14 +73,14 @@ def InitDB() -> tuple[pymongo.database.Database, pymongo.database.Database]:
 
 def BuildCache():
     ChatStatus = keydefaultdict(ChatStatusEntity)
-    for doc in GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].find():
+    for doc in GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
         ChatStatus[doc['GuildID']] = ChatStatusEntity(
             GuildID=doc.get('GuildID'),
             Global=doc.get('Global'),
         )
 
     UserStatus = keydefaultdict(UserStatusEntity)
-    for doc in GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find():
+    for doc in GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
         UserStatus[doc['DCUserID']] = UserStatusEntity(
             DCUserID=doc.get('DCUserID'),
             Contribution=doc.get('Contribution'),
@@ -121,9 +121,9 @@ def AddContribution(DCUserID: int, Delta: int) -> int:
 
 async def GetLBInfo(client, num: int) -> str:
     sort = [('Contribution', pymongo.DESCENDING)]
-    Curser = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(limit=num, sort=sort)
+    cursor = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(limit=num, sort=sort)
     LB = ["目前KO榜:"]
-    for idx, doc in enumerate(Curser, 1):
+    for idx, doc in enumerate(cursor, 1):
         Username = await GetMaskedNameByID(client, doc.get('DCUserID'))
         LB.append(f"{idx}. {Username}, 貢獻值:{doc['Contribution']}")
     return '\n'.join(LB)

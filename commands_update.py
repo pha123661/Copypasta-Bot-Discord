@@ -133,10 +133,10 @@ class commands_update(interactions.Extension):
             await ctx.send(f'關鍵字「{keyword}」沒有東西可以刪除')
             return
 
-        Curser = col.find(filter=filter).sort(
+        cursor = col.find(filter=filter).sort(
             "Type", pymongo.ASCENDING).limit(5)
         SOptions = list()
-        for doc in Curser:
+        for doc in cursor:
             SOption = interactions.SelectOption(
                 label=f"{CONFIG['SETTING']['NAME'][doc['Type']]}：{doc['Keyword']}",
                 value=f"{doc['_id']}",

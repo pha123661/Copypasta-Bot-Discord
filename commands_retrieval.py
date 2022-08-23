@@ -45,13 +45,13 @@ class commands_update(interactions.Extension):
             col = GLOBAL_COL
         else:
             col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
-        Curser = col.find(filter={"Type": {"$ne": 0}}).sort(
+        cursor = col.find(filter={"Type": {"$ne": 0}}, cursor_type=pymongo.CursorType.EXHAUST).sort(
             "Type", pymongo.ASCENDING)
 
         await ctx.defer()
         Maximum_Rst = 25
         query_set = GenerateJieba(query)
-        for doc in Curser:
+        for doc in cursor:
             Maximum_Rst -= 1
             if Maximum_Rst < 0:
                 break
@@ -67,7 +67,7 @@ class commands_update(interactions.Extension):
 
         await ctx.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆, 請查看與 bot 的私訊")
         await ctx.author.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆")
-        Curser.close()
+        cursor.close()
 
 
 def setup(client):
