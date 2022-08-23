@@ -112,7 +112,7 @@ class commands_update(interactions.Extension):
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')
 
     @interactions.extension_command()
-    @interactions.option(description="要刪除的複製文的 關鍵字")
+    @interactions.option(description="欲刪除複製文的關鍵字")
     async def delete(self, ctx: interactions.CommandContext, keyword: str):
         """刪除複製文, 若有重複關鍵字 最多只會顯示5篇"""
         if not 2 <= len(keyword) <= 30:

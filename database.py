@@ -1,6 +1,6 @@
 import pymongo
 import interactions
-import asyncio
+from typing import Tuple
 from datetime import datetime
 from collections import defaultdict
 from config import CONFIG
@@ -130,15 +130,18 @@ async def GetLBInfo(client, num: int) -> str:
 
 
 async def GetMaskedNameByID(client, DCUserID: int) -> str:
-    async def GetName(client, DCUserID: int):
+    async def GetName(client, DCUserID: int) -> Tuple[str, bool]:
         if DCUserID is None:
-            return "Telegram 用戶"
-        ret = await interactions.get(client, interactions.User, object_id=DCUserID)
-        ret = ret.username
-        if ret is None:
-            return "不明用戶"
-        return ret
-    Name = await GetName(client, DCUserID)
+            return "Telegram 用戶", False
+        try:
+            ret = await interactions.get(client, interactions.User, object_id=DCUserID)
+            ret = ret.username
+        except:
+            return "不明用戶", False
+        return ret, True
+    Name, NeedMask = await GetName(client, DCUserID)
+    if not NeedMask:
+        return Name
     Mask = '*' * max(len(Name) // 3, 1)
     UnmaskIdx = (len(Name) - len(Mask)) // 2
     return ''.join([Name[:UnmaskIdx], Mask, Name[UnmaskIdx + len(Mask):]])

@@ -3,7 +3,7 @@ import pymongo
 import random
 
 import config
-from database import DB, GLOBAL_COL, ChatStatus
+from database import *
 from vlp import GenerateJieba
 
 
@@ -12,7 +12,7 @@ class commands_update(interactions.Extension):
         self.client: interactions.Client = client
 
     @interactions.extension_command()
-    @interactions.option(description="要抽幾篇, 預設爲1")
+    @interactions.option(description="要抽幾篇, 預設爲1", min_value=1, max_value=10)
     async def random(self, ctx: interactions.CommandContext, number: int = 1):
         """隨機從資料庫抽取 ”number“ 篇, 預設爲 1 篇"""
         async def send_random(col: pymongo.collection.Collection, CN):
@@ -68,6 +68,20 @@ class commands_update(interactions.Extension):
         await ctx.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆, 請查看與 bot 的私訊")
         await ctx.author.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆")
         cursor.close()
+
+    @interactions.extension_command()
+    @interactions.option(description="要顯示幾篇, 預設爲3", min_value=1, max_value=10)
+    async def recent(self, ctx: interactions.CommandContext, number: int = 3):
+        """顯示公共資料庫最新加入的 ”number“ 篇, 預設爲 3 篇"""
+        if not ChatStatus[int(ctx.guild_id)].Global:
+            await ctx.send("執行失敗: 此指令只能在公共模式下執行")
+            return
+        col = GLOBAL_COL
+        sort = [("Createtime", -1)]
+        filter = {"From": {"$ne": int(ctx.author.id)}}
+        Curser = col.find(filter, sort=sort, limit=number, )
+        for doc in Curser:
+            await ctx.send(f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」\n名稱：「{doc['Keyword']}」\n摘要：「{doc['Summarization']}」\n內容：\n{doc['Content']}")
 
 
 def setup(client):
