@@ -1,22 +1,37 @@
-import hfapi
-import requests
-import googletrans
+import string
+import re
 
+import googletrans
+import hfapi
+import jieba
+import requests
 
 from random import choice
 from config import CONFIG
+
+# get stop_words for jieba
+with open('./nlp_dict/chinese_stop_words.txt', encoding="utf-8") as f:
+    stop_words = {line.strip() for line in f.readlines()}
+punc = string.punctuation + \
+    "！？｡。＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
+jieba.add_word("笑死")
 
 HFclient = hfapi.Client(choice(CONFIG['API']['HF']['TOKENs']))
 Translator = googletrans.Translator()
 
 
-def TextSummarization(Content: str) -> str:
+def GenerateJieba(keyword: str) -> set[str]:
+    keyword = re.sub(f"[{punc}\n]+", "", keyword)
+    return {w for w in jieba.cut_for_search(keyword) if w not in stop_words}
+
+
+def TextSummarization(content: str) -> str:
     global HFclient
     count = len(CONFIG['API']['HF']['TOKENs'])
     for _ in range(count):
         try:
             rst = HFclient.summarization(
-                input=Content,
+                input=content,
                 model=CONFIG['API']['HF']['SUM_MODEL']
             )
 

@@ -36,7 +36,7 @@ class ModifyingCommands(interactions.Extension):
             await ctx.send(f"新增失敗：內容長度需介於1~1900字, 目前爲{len(copypasta)}字", ephemeral=True)
             return
 
-        # get file type
+        # preprocess
         if media is None:
             # text
             Type = CONFIG['SETTING']['TYPE']['TXT']
