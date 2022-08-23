@@ -18,7 +18,7 @@ def InitConfig(path: str) -> dict:
     return config
 
 
-def GetColNameByGuildID(GuildID: int):
+def GetColNameByGuildID(GuildID):
     return CONFIG['DB']['CFormat'] % (GuildID)
 
 
