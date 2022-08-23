@@ -127,7 +127,7 @@ def UpdateChatStatus(CSE: ChatStatusEntity):
 
 def AddContribution(DCUserID: int, Delta: int) -> int:
     """increaments user contribution and returns current contribution"""
-    global UserStatus, GLOBAL_DB
+    global UserStatus
     col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]
     filter = {"DCUserID": DCUserID}
     update = {"$inc": {"Contribution": Delta}}
