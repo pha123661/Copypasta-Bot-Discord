@@ -167,7 +167,13 @@ class commands_update(interactions.Extension):
             if doc is None:
                 await ctx.send(f"找不到 {_id}, 請確認刪除時沒有切換模式")
             else:
-                await ctx.send(f"摘要:「{doc['Summarization']}」\n內容:\n{doc['Content']}")
+                if doc['Type'] == 1:
+                    content = doc['Content']
+                elif doc['Type'] == 2:
+                    content = doc['URL']
+                else:
+                    content = "不支援的檔案格式 (可能來自Telegram)"
+                await ctx.send(f"摘要:「{doc['Summarization']}」\n內容:\n{content}")
             if doc is not None:
                 return True
             else:

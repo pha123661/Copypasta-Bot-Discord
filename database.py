@@ -137,7 +137,11 @@ async def GetMaskedNameByID(client, DCUserID: int) -> str:
             ret = await interactions.get(client, interactions.User, object_id=DCUserID)
             ret = ret.username
         except:
-            return "不明用戶", False
+            doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']
+                            ].find_one({"TGUserID": DCUserID})
+            if doc is not None and 'DCUserID' in doc:
+                return await    GetName(client, doc['DCUserID'])
+            return "Telegram 用戶", False
         return ret, True
     Name, NeedMask = await GetName(client, DCUserID)
     if not NeedMask:

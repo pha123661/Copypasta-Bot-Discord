@@ -19,7 +19,13 @@ class commands_update(interactions.Extension):
             random_idx = random.randint(0, CN - 1)  # [0, CN)
             doc = col.find_one(skip=random_idx)
             if doc is not None:
-                await ctx.send(f"幫你從{CN}篇中精心選擇了:\n{doc['Content']}")
+                if doc['Type'] == 1:
+                    content = doc['Content']
+                elif doc['Type'] == 2:
+                    content = doc['URL']
+                else:
+                    return await send_random(col, CN)
+                await ctx.send(f"幫你從{CN}篇中精心選擇了:\n{content}")
             else:
                 await ctx.send('發生錯誤')
 
@@ -77,11 +83,17 @@ class commands_update(interactions.Extension):
             await ctx.send("執行失敗: 此指令只能在公共模式下執行")
             return
         col = GLOBAL_COL
-        sort = [("Createtime", -1)]
+        sort = [("CreateTime", pymongo.DESCENDING)]
         filter = {"From": {"$ne": int(ctx.author.id)}}
-        Curser = col.find(filter, sort=sort, limit=number, )
+        Curser = col.find(filter, limit=number).sort(sort)
         for doc in Curser:
-            await ctx.send(f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」\n名稱：「{doc['Keyword']}」\n摘要：「{doc['Summarization']}」\n內容：\n{doc['Content']}")
+            if doc['Type'] == 1:
+                content = doc['Content']
+            elif doc['Type'] == 2:
+                content = doc['URL']
+            else:
+                content = "不支援的檔案格式 (可能來自telegram)"
+            await ctx.send(f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」\n名稱：「{doc['Keyword']}」\n摘要：「{doc['Summarization']}」\n內容：\n{content}")
 
 
 def setup(client):
