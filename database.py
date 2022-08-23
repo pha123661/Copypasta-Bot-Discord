@@ -2,18 +2,20 @@ import pymongo
 from datetime import datetime
 from config import CONFIG
 
-# type HokTseBun struct {
-#     UID           primitive.ObjectID `bson: "_id"`
-#     Type          int                `bson: "Type"`
-#     Keyword       string             `bson: "Keyword"`
-#     Summarization string             `bson: "Summarization"`
-#     Content       string             `bson: "Content"`
-#     From          int64              `bson: "From"`
-#     CreateTime    time.Time          `bson: "CreateTime"`
-#     URL           string             `bson: "URL"`
-#     FileUniqueID  string             `bson: "FileUniqueID"`
-# *** Platform      string ***
-# }
+"""
+type HokTseBun struct {
+    UID           
+    Type          int
+    Keyword       string
+    Summarization string
+    Content       string -> media.proxy_url
+    From          string -> str(ctx.author.id)
+    CreateTime    time.Time -> datatime.Now()
+    URL           string -> media.url
+    FileUniqueID  string -> sha256(Content / b64_encoded_image).hexdigit()
+*** Platform      string -> "Discord" ***
+}
+"""
 
 
 def InitDB() -> tuple[pymongo.database.Database, pymongo.database.Database]:
@@ -41,7 +43,7 @@ def InitDB() -> tuple[pymongo.database.Database, pymongo.database.Database]:
                            unique=True)
     ])
 
-    return GLOBAL_DB, DB
+    return GLOBAL_DB, DB, GLOBAL_DB[CONFIG['DB']['GLOBAL_COL']]
 
 
 def InsertHTB(Collection: pymongo.database.Collection, HTB: dict) -> pymongo.results.InsertOneResult:
@@ -51,4 +53,4 @@ def InsertHTB(Collection: pymongo.database.Collection, HTB: dict) -> pymongo.res
     return Collection.insert_one(HTB)
 
 
-GLOBAL_DB, DB = InitDB()
+GLOBAL_DB, DB, GLOBAL_COL = InitDB()

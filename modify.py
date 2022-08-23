@@ -1,5 +1,4 @@
 import interactions
-from interactions.ext.files import command_send
 import config
 import requests
 import base64
@@ -8,18 +7,13 @@ from hashlib import sha256
 
 from config import CONFIG
 from utils import ChatStatus
-from database import GLOBAL_DB, DB, InsertHTB
+from database import DB, GLOBAL_COL, InsertHTB
 from vlp import TextSummarization, ImageCaptioning
 
 
 class ModifyingCommands(interactions.Extension):
     def __init__(self, client) -> None:
         self.client: interactions.Client = client
-
-    @interactions.extension_command(description="bot 會重複你說的話")
-    @interactions.option(description="要回覆什麼?")
-    async def echo(self, ctx: interactions.CommandContext, text: str):
-        await ctx.send(f"bot 說了 {text}!")
 
     @interactions.extension_command(description="新增複製文")
     @interactions.option(description="關鍵字,不宜過長或重複")
@@ -29,8 +23,8 @@ class ModifyingCommands(interactions.Extension):
         if copypasta is None and media is None:
             await ctx.send("新增失敗：請給我複製文或圖片", ephemeral=True)
             return
-        if len(keyword) >= 30:
-            await ctx.send(f"新增失敗：關鍵字長度需小於30字, 目前爲{len(keyword)}字", ephemeral=True)
+        if not 2 <= len(keyword) <= 30:
+            await ctx.send(f"新增失敗：關鍵字長度需介於 2~30 字, 目前爲{len(keyword)}字", ephemeral=True)
             return
         if (copypasta is not None) and not (1 <= len(copypasta) <= 1900):
             await ctx.send(f"新增失敗：內容長度需介於1~1900字, 目前爲{len(copypasta)}字", ephemeral=True)
@@ -63,7 +57,7 @@ class ModifyingCommands(interactions.Extension):
                 return
 
         if ChatStatus[ctx.guild_id].Global:
-            Col = GLOBAL_DB[CONFIG['DB']['GLOBAL_COL']]
+            Col = GLOBAL_COL
         else:
             Col = DB[config.GetColByGuildID(ctx.guild_id)]
 
@@ -104,6 +98,8 @@ class ModifyingCommands(interactions.Extension):
         else:
             # failed
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')
+
+
 
 
 def setup(client):
