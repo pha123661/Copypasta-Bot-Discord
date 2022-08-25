@@ -1,5 +1,7 @@
 .vscode
 __pycache__
+utils
+.env
 
 *.pyc
 *.md

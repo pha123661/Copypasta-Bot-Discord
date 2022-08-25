@@ -4,7 +4,7 @@ import random
 
 import config
 from database import *
-from vlp import GenerateJieba
+from vlp import TestHit
 
 
 class commands_update(interactions.Extension):
@@ -56,15 +56,11 @@ class commands_update(interactions.Extension):
 
         await ctx.defer()
         Maximum_Rst = 25
-        query_set = GenerateJieba(query)
         for doc in cursor:
             Maximum_Rst -= 1
             if Maximum_Rst < 0:
                 break
-            keys = GenerateJieba(doc['Keyword'])
-            keys |= GenerateJieba(doc['Summarization'])
-            if len(query_set & keys) > 0 or query in doc['Content']:
-                # hit
+            if TestHit(query, doc):
                 await ctx.author.send(f"{'-'*10}\n關鍵字:「{doc['Keyword']}」\n摘要:「{doc['Summarization']}」\n內容:\n{doc['Content']}")
 
         if Maximum_Rst < 0:

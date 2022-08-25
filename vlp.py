@@ -1,6 +1,6 @@
 import string
 import re
-
+import functools
 import googletrans
 import hfapi
 import jieba
@@ -20,10 +20,21 @@ HFclient = hfapi.Client(choice(CONFIG['API']['HF']['TOKENs']))
 Translator = googletrans.Translator()
 
 
+@functools.lru_cache(maxsize=512, typed=True)
 def GenerateJieba(keyword: str) -> set[str]:
     keyword = re.sub(f"[{punc}\n]+", "", keyword)
     ret = {w for w in jieba.cut_for_search(keyword)} - stop_words
     return ret
+
+
+def TestHit(query: str, doc: dict) -> bool:
+    query_set = GenerateJieba(query)
+    keys = GenerateJieba(doc['Keyword'])
+    keys |= GenerateJieba(doc['Summarization'])
+    if len(query_set & keys) > 0 or query in doc['Content']:
+        # hit
+        return True
+    return False
 
 
 def TextSummarization(content: str) -> str:

@@ -15,8 +15,9 @@ class commands_public(interactions.Extension):
 
     @interactions.extension_command()
     @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 輸入 /UserID 以取得")
-    async def link_telegram(self, ctx: interactions.CommandContext, UserID: int):
+    async def linktg(self, ctx: interactions.CommandContext, userid: int):
         """和 Telegram 使用者進行連接, 可共享貢獻值"""
+        pass
 
     @interactions.extension_command()
     async def toggle(self, ctx: interactions.CommandContext):
