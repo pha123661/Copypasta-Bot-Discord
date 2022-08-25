@@ -4,6 +4,7 @@ import functools
 import googletrans
 import hfapi
 import jieba
+import jieba.analyse
 import requests
 
 from random import choice
@@ -21,20 +22,33 @@ Translator = googletrans.Translator()
 
 
 @functools.lru_cache(maxsize=512, typed=True)
-def GenerateJieba(keyword: str) -> set[str]:
+def GenerateJieba(keyword: str, method, **kwargs) -> set[str]:
     keyword = re.sub(f"[{punc}\n]+", "", keyword)
-    ret = {w for w in jieba.cut_for_search(keyword)} - stop_words
+    ret = {w for w in method(keyword, **kwargs)} - stop_words
     return ret
 
 
-def TestHit(query: str, doc: dict) -> bool:
-    query_set = GenerateJieba(query)
-    keys = GenerateJieba(doc['Keyword'])
-    keys |= GenerateJieba(doc['Summarization'])
-    if len(query_set & keys) > 0 or query in doc['Content']:
-        # hit
-        return True
-    return False
+def TestHit(query: str, *keylist) -> bool:
+    # query_set = GenerateJieba(query)
+    # keys = GenerateJieba(doc['Keyword'])
+    # keys |= GenerateJieba(doc['Summarization'])
+    # if len(query_set & keys) > 0 or query in doc['Content']:
+    #     # hit
+    #     return True
+    # return False
+    QuerySet = GenerateJieba(query, jieba.cut)
+    QuerySet.add(query)
+
+    ALL_MAX = 0
+    for Key in keylist:
+        KeySet = GenerateJieba(query, jieba.analyse.extract_tags, topK=7)
+        KeySet.add(Key)
+        rst = QuerySet & KeySet
+        sum = 0
+        for r in rst:
+            sum += len(r)
+        ALL_MAX = max(ALL_MAX, sum)
+    return ALL_MAX
 
 
 def TextSummarization(content: str) -> str:

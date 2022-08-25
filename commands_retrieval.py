@@ -3,10 +3,21 @@ import pymongo
 import random
 import requests
 import io
+import heapq
 
 import config
 from database import *
 from vlp import TestHit
+
+
+class PriorityEntry(object):
+
+    def __init__(self, priority, data):
+        self.data = data
+        self.priority = priority
+
+    def __lt__(self, other):
+        return self.priority > other.priority  # max heap
 
 
 class commands_update(interactions.Extension):
@@ -23,7 +34,7 @@ class commands_update(interactions.Extension):
             if doc is not None:
                 to_send = f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"
                 if doc['Type'] == 1:
-                    to_send += ":\n{doc['Content']}"
+                    to_send += f":\n{doc['Content']}"
                     await ctx.send(to_send)
                 elif doc['Type'] == 2:
                     img = interactions.File(
@@ -63,20 +74,46 @@ class commands_update(interactions.Extension):
             "Type", pymongo.ASCENDING)
 
         await ctx.defer()
-        Maximum_Rst = 25
+        Maximum_Rst = 10
+        Rst_Count = 0
+        heap = list()  # min heap
         for doc in cursor:
-            Maximum_Rst -= 1
-            if Maximum_Rst < 0:
-                break
-            if TestHit(query, doc):
-                await ctx.author.send(f"{'-'*10}\n關鍵字:「{doc['Keyword']}」\n摘要:「{doc['Summarization']}」\n內容:\n{doc['Content']}")
+            if doc['Type'] == 1:
+                priority = TestHit(query, doc['Keyword'], doc['Content'])
+            else:
+                priority = TestHit(query, doc['Keyword'], doc['Summarization'])
+            heapq.heappush(heap, PriorityEntry(
+                priority, doc))  # simulate max heap
 
-        if Maximum_Rst < 0:
+        for _ in range(len(heap)):
+            if Rst_Count >= Maximum_Rst:
+                Rst_Count += 1
+                break
+            tmp = heapq.heappop(heap)
+            priority, doc = tmp.priority, tmp.data
+            if abs(priority) > 0:
+                Rst_Count += 1
+                to_send = f"{'-'*10}\n關鍵字:「{doc['Keyword']}」\n摘要:「{doc['Summarization']}」"
+                if doc['Type'] == 1:
+                    to_send += f":\n{doc['Content']}"
+                    await ctx.author.send(to_send)
+                elif doc['Type'] == 2:
+                    img = interactions.File(
+                        filename=f"img.jpg",
+                        fp=io.BytesIO(requests.get(doc['URL']).content),
+                        description=doc['Summarization']
+                    )
+                    await ctx.author.send(to_send, files=img)
+                else:
+                    Rst_Count -= 1
+
+        if Rst_Count > Maximum_Rst:
             # exceeded
+            Rst_Count -= 1
             await ctx.send("搜尋結果超過上限25筆, 只顯示前25筆, 請嘗試更換關鍵字")
 
-        await ctx.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆, 請查看與 bot 的私訊")
-        await ctx.author.send(f"「{query}」的搜尋結果共 {25-Maximum_Rst} 筆")
+        await ctx.send(f"「{query}」的搜尋結果共 {Rst_Count} 筆, 請查看與 bot 的私訊")
+        await ctx.author.send(f"「{query}」的搜尋結果共 {Rst_Count} 筆")
         cursor.close()
 
     @interactions.extension_command()
