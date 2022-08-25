@@ -4,10 +4,11 @@ from typing import Tuple
 from datetime import datetime
 from collections import defaultdict
 from config import CONFIG
+from bson.objectid import ObjectId
 
 """
 type HokTseBun struct {
-    UID           
+    UID
     Type          int
     Keyword       string
     Summarization string
@@ -131,10 +132,46 @@ def AddContribution(DCUserID: int, Delta: int) -> int:
     col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]
     filter = {"DCUserID": DCUserID}
     update = {"$inc": {"Contribution": Delta}}
-    doc = col.find_one_and_update(filter=filter, update=update, upsert=True)
 
-    UserStatus[DCUserID].Contribution += 1
-    return UserStatus[DCUserID].Contribution
+    try:
+        doc = col.find_one_and_update(
+            filter=filter, update=update, upsert=True)
+        if doc is not None and "Contribution" in doc:
+            UserStatus[DCUserID].Contribution = doc['Contribution'] + Delta
+        else:
+            UserStatus[DCUserID].Contribution = Delta
+        return UserStatus[DCUserID].Contribution
+    except:
+        return -1
+
+
+def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
+    global UserStatus
+    col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]
+
+    tg_info = col.find_one({"TGUserID": TGUserID})
+    if tg_info is None:
+        return False
+    elif col.find_one({"DCUserID": DCUserID, "TGUserID": {"$exists": True}}):
+        return False
+
+    filter = {"DCUserID": DCUserID}
+    update = {
+        "$set": {"TGUserID": TGUserID},
+        "$inc": {"Contribution": tg_info['Contribution']}
+    }
+
+    try:
+        dc_old_info = col.find_one_and_update(
+            filter=filter, update=update, upsert=True)
+        UserStatus[DCUserID].TGUserID = TGUserID
+        UserStatus[DCUserID].Contribution = dc_old_info['Contribution'] + \
+            tg_info['Contribution']
+        col.find_one_and_delete({"_id": tg_info['_id']})
+
+        return True
+    except:
+        return False
 
 
 async def GetLBInfo(client, num: int) -> str:

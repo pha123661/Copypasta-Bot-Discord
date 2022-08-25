@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 import config
 from config import CONFIG
 from database import *
-from vlp import GenerateJieba
 
 
 class commands_public(interactions.Extension):
@@ -15,9 +14,12 @@ class commands_public(interactions.Extension):
 
     @interactions.extension_command()
     @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 輸入 /UserID 以取得")
-    async def linktg(self, ctx: interactions.CommandContext, userid: int):
-        """和 Telegram 使用者進行連接, 可共享貢獻值"""
-        pass
+    async def linktg(self, ctx: interactions.CommandContext, tguserid: int):
+        """和 Telegram 帳號進行連結, 兩個帳號可共享貢獻值"""
+        if LinkTGAccount(int(ctx.author.id), tguserid):
+            await ctx.send(f"連結Telegram成功, 馬上用status查看吧")
+        else:
+            await ctx.send("發生錯誤, 可能是 Telegram 帳號不存在 / 已完成過連結, 不是的話請找作者")
 
     @interactions.extension_command()
     async def toggle(self, ctx: interactions.CommandContext):
