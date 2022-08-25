@@ -1,6 +1,8 @@
 import interactions
 import pymongo
 import random
+import requests
+import io
 
 import config
 from database import *
@@ -19,13 +21,19 @@ class commands_update(interactions.Extension):
             random_idx = random.randint(0, CN - 1)  # [0, CN)
             doc = col.find_one(skip=random_idx)
             if doc is not None:
+                to_send = f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"
                 if doc['Type'] == 1:
-                    content = doc['Content']
+                    to_send += ":\n{doc['Content']}"
+                    await ctx.send(to_send)
                 elif doc['Type'] == 2:
-                    content = doc['URL']
+                    img = interactions.File(
+                        filename=f"img.jpg",
+                        fp=io.BytesIO(requests.get(doc['URL']).content),
+                        description=doc['Summarization']
+                    )
+                    await ctx.send(to_send, files=img)
                 else:
                     return await send_random(col, CN)
-                await ctx.send(f"幫你從{CN}篇中精心選擇了:\n{content}")
             else:
                 await ctx.send('發生錯誤')
 
@@ -83,13 +91,19 @@ class commands_update(interactions.Extension):
         filter = {"From": {"$ne": int(ctx.author.id)}}
         Curser = col.find(filter, limit=number).sort(sort)
         for doc in Curser:
+            to_send = f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」\n名稱：「{doc['Keyword']}」\n摘要：「{doc['Summarization']}」"
             if doc['Type'] == 1:
-                content = doc['Content']
+                to_send += f"\n內容:「{doc['Content']}」"
+                await ctx.send(to_send)
             elif doc['Type'] == 2:
-                content = doc['URL']
+                img = interactions.File(
+                    filename=f"img.jpg",
+                    fp=io.BytesIO(requests.get(doc['URL']).content),
+                    description=doc['Summarization']
+                )
+                await ctx.send(to_send, files=img)
             else:
                 content = "不支援的檔案格式 (可能來自telegram)"
-            await ctx.send(f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」\n名稱：「{doc['Keyword']}」\n摘要：「{doc['Summarization']}」\n內容：\n{content}")
 
 
 def setup(client):

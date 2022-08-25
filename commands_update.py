@@ -3,6 +3,7 @@ import pymongo
 import requests
 import base64
 import asyncio
+import io
 from hashlib import sha256
 from bson.objectid import ObjectId
 
@@ -102,11 +103,16 @@ class commands_update(interactions.Extension):
             # success
             if Type == CONFIG['SETTING']['TYPE']['TXT']:
                 if not Summarization == "":
-                    await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:\n{Content}')
+                    await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:「{Content}」')
                 else:
-                    await ctx.send(f'新增「{keyword}」成功\n未生成摘要\n內容:\n{Content}')
+                    await ctx.send(f'新增「{keyword}」成功\n未生成摘要\n內容:「{Content}」')
             else:
-                await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:\n{media.proxy_url}')
+                img = interactions.File(
+                    filename=f"img.jpg",
+                    fp=io.BytesIO(requests.get(media.proxy_url).content),
+                    description=Summarization
+                )
+                await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」', files=img)
         else:
             # failed
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')
