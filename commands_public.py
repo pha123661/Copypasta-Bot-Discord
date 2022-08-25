@@ -13,13 +13,26 @@ class commands_public(interactions.Extension):
         self.client: interactions.Client = client
 
     @interactions.extension_command()
-    @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 輸入 /UserID 以取得")
+    @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 對 bot 輸入 /userid 以取得")
     async def linktg(self, ctx: interactions.CommandContext, tguserid: int):
         """和 Telegram 帳號進行連結, 兩個帳號可共享貢獻值"""
         if LinkTGAccount(int(ctx.author.id), tguserid):
             await ctx.send(f"連結Telegram成功, 馬上用status查看吧")
         else:
             await ctx.send("發生錯誤, 可能是 Telegram 帳號不存在 / 已完成過連結, 不是的話請找作者")
+
+    @interactions.extension_command()
+    @interactions.option(description="想要設定的暱稱, 設定後可以更改、不能刪除")
+    async def nickname(self, ctx: interactions.CommandContext, nickname: str):
+        """設定自己的暱稱, 顯示排行榜用"""
+        if not 1 <= len(nickname) <= 7:
+            await ctx.send(f"設定失敗: 暱稱不能大於7個字, 目前{len(nickname)}字")
+            return
+        DCUserID = int(ctx.author.id)
+        GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one_and_update(
+            filter={"DCUserID": DCUserID}, update={"$set": {"Nickname": nickname}}, upsert=True)
+        UserStatus[DCUserID].Nickname = nickname
+        await ctx.send(f"設定暱稱「{nickname}」成功")
 
     @interactions.extension_command()
     async def toggle(self, ctx: interactions.CommandContext):
@@ -57,11 +70,15 @@ class commands_public(interactions.Extension):
         """查看目前模式 和 KO榜"""
         # get leaderboard
         Leaderboard = await GetLBInfo(self.client, 3)
+        if UserStatus[int(ctx.author.id)].Nickname != None:
+            Nickname = UserStatus[int(ctx.author.id)].Nickname
+        else:
+            Nickname = "尚未設定暱稱"
         # get status
         if ChatStatus[int(ctx.guild_id)].Global:
-            await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 公共模式\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
+            await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 公共模式\n暱稱:「{Nickname}」\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
         else:
-            await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 私人模式\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
+            await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 私人模式\n暱稱:「{Nickname}」\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
 
     @interactions.extension_command()
     async def dump(self, ctx: interactions.CommandContext):

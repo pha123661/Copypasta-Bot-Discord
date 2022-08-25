@@ -30,10 +30,11 @@ class ChatStatusEntity:
 
 
 class UserStatusEntity:
-    def __init__(self, DCUserID: int, TGUserID: int = None, Contribution: int = 0, Banned: bool = False) -> None:
+    def __init__(self, DCUserID: int, TGUserID: int = None, Contribution: int = 0, Nickname: str = None, Banned: bool = False) -> None:
         self.DCUserID: int = DCUserID
         self.TGUserID: int = TGUserID
         self.Contribution: int = Contribution
+        self.Nickname: str = Nickname
         self.Banned: bool = Banned
 
 
@@ -103,6 +104,7 @@ def BuildCache():
             DCUserID=doc.get('DCUserID'),
             TGUserID=doc.get('TGUserID'),
             Contribution=doc.get('Contribution'),
+            Nickname=doc.get('Nickname'),
             Banned=doc.get('Banned'),
         )
 
@@ -156,10 +158,17 @@ def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
         return False
 
     filter = {"DCUserID": DCUserID}
-    update = {
-        "$set": {"TGUserID": TGUserID},
-        "$inc": {"Contribution": tg_info['Contribution']}
-    }
+
+    if tg_info.get("Nickname") != None:
+        update = {
+            "$set": {"TGUserID": TGUserID, "Nickname": tg_info["Nickname"]},
+            "$inc": {"Contribution": tg_info['Contribution']}
+        }
+    else:
+        update = {
+            "$set": {"TGUserID": TGUserID},
+            "$inc": {"Contribution": tg_info['Contribution']}
+        }
 
     try:
         dc_old_info = col.find_one_and_update(
@@ -185,22 +194,17 @@ async def GetLBInfo(client, num: int) -> str:
 
 
 async def GetMaskedNameByID(client, DCUserID: int) -> str:
-    async def GetName(client, DCUserID: int) -> Tuple[str, bool]:
-        if DCUserID is None:
-            return "Telegram 用戶", False
-        try:
-            ret = await interactions.get(client, interactions.User, object_id=DCUserID)
-            ret = ret.username
-        except:
-            doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']
-                            ].find_one({"TGUserID": DCUserID})
-            if doc is not None and 'DCUserID' in doc:
-                return await GetName(client, doc['DCUserID'])
-            return "Telegram 用戶", False
-        return ret, True
-    Name, NeedMask = await GetName(client, DCUserID)
-    if not NeedMask:
-        return Name
+    if DCUserID is None:
+        return "Telegram 用戶"
+
+    doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one(
+        {"DCUserID": DCUserID})
+
+    if doc.get("Nickname") != None:
+        return doc['Nickname']
+
+    Name = await interactions.get(client, interactions.User, object_id=DCUserID)
+    Name = Name.username
     Mask = '*' * max(len(Name) // 3, 1)
     UnmaskIdx = (len(Name) - len(Mask)) // 2
     return ''.join([Name[:UnmaskIdx], Mask, Name[UnmaskIdx + len(Mask):]])
