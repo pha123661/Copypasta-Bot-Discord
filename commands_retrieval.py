@@ -2,8 +2,6 @@
 import interactions
 import pymongo
 import random
-import requests
-import io
 import heapq
 
 import config

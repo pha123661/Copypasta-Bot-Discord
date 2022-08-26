@@ -9,8 +9,8 @@ from bson.objectid import ObjectId
 
 import config
 from config import CONFIG
-from database import DB, GLOBAL_COL, InsertHTB, ChatStatus, AddContribution
 from vlp import TextSummarization, ImageCaptioning
+from database import *
 from utils import *
 
 

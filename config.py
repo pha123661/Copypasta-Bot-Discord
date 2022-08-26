@@ -1,11 +1,9 @@
 import os
 import toml
 from pprint import pprint
-from dotenv import load_dotenv
 
 
 def InitConfig(path: str) -> dict:
-    load_dotenv
     config = toml.load(path)
     config['API']['DC']['TOKEN'] = os.getenv("APIDCTOKEN")
     config['API']['HF']['TOKENs'] = (os.getenv("APIHFTOKENs")).split(" ")
@@ -24,4 +22,3 @@ def GetColNameByGuildID(GuildID: int):
 
 
 CONFIG = InitConfig("./config.toml")
-GuildIDs = [948951282398416967]

@@ -3,15 +3,21 @@ import interactions
 import config
 import heapq
 from database import *
-from config import CONFIG, GuildIDs
+from config import CONFIG
 from vlp import TestHit
 from utils import *
 
-bot = interactions.Client(
-    token=CONFIG['API']['DC']['TOKEN'],
-    default_scope=GuildIDs,
-    intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
-)
+if len(CONFIG['SETTING']['GUILD_IDs']) > 0:
+    bot = interactions.Client(
+        token=CONFIG['API']['DC']['TOKEN'],
+        default_scope=CONFIG['SETTING']['GUILD_IDs'],
+        intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
+    )
+else:
+    bot = interactions.Client(
+        token=CONFIG['API']['DC']['TOKEN'],
+        intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
+    )
 
 
 def main():
