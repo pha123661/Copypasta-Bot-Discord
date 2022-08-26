@@ -56,7 +56,7 @@ class PriorityEntry(object):
         return self.priority > other.priority  # max heap
 
 
-def InitDB() -> tuple[pymongo.database.Database, pymongo.database.Database]:
+def InitDB():
     client = pymongo.MongoClient(CONFIG['API']['MONGO']['URI'])
     DB = client[CONFIG['DB']['DB_NAME']]
     GLOBAL_DB = client[CONFIG['DB']['GLOBAL_DB_NAME']]

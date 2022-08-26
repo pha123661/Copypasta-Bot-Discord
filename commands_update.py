@@ -155,7 +155,7 @@ class commands_update(interactions.Extension):
         await ctx.send("請選擇要刪除以下哪些:", components=SMenu)
 
     @interactions.extension_component("deletion_confirmation")
-    async def confirmation_handler(self, ctx: interactions.CommandContext, selected_values: list[str]):
+    async def confirmation_handler(self, ctx: interactions.CommandContext, selected_values):
         async def send_confirmation_by_id(_id: str) -> bool:
             if ChatStatus[int(ctx.guild_id)].Global:
                 col = GLOBAL_COL
