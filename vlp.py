@@ -21,14 +21,7 @@ HFclient = hfapi.Client(choice(CONFIG['API']['HF']['TOKENs']))
 Translator = googletrans.Translator()
 
 
-@functools.lru_cache(maxsize=512, typed=True)
-def GenerateJieba(keyword: str, method, **kwargs) -> set[str]:
-    keyword = re.sub(f"[{punc}\n]+", "", keyword)
-    ret = {w for w in method(keyword, **kwargs)} - stop_words
-    return ret
-
-
-def TestHit(query: str, *keylist) -> bool:
+def TestHit(query: str, *keylist) -> int:
     # query_set = GenerateJieba(query)
     # keys = GenerateJieba(doc['Keyword'])
     # keys |= GenerateJieba(doc['Summarization'])
@@ -36,18 +29,29 @@ def TestHit(query: str, *keylist) -> bool:
     #     # hit
     #     return True
     # return False
-    QuerySet = GenerateJieba(query, jieba.cut)
+    QuerySet = re.sub(f"[{punc}\n]+", "", query)
+    QuerySet = {w for w in jieba.cut(query)} - stop_words
     QuerySet.add(query)
 
+    keylist = sorted(keylist, key=len)
     ALL_MAX = 0
     for Key in keylist:
-        KeySet = GenerateJieba(query, jieba.analyse.extract_tags, topK=7)
+        if Key == "":
+            continue
+        Key = re.sub(f"[{punc}\n]+", "", Key)
+        KeySet = {w for w in jieba.analyse.extract_tags(Key, topK=7)}
+        KeySet = KeySet - stop_words
         KeySet.add(Key)
+
         rst = QuerySet & KeySet
+        print(query, Key)
+        print(QuerySet, KeySet, rst)
+        print("#################")
         sum = 0
         for r in rst:
             sum += len(r)
         ALL_MAX = max(ALL_MAX, sum)
+    print(ALL_MAX)
     return ALL_MAX
 
 

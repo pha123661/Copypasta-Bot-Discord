@@ -3,7 +3,6 @@ import pymongo
 import requests
 import base64
 import asyncio
-import io
 from hashlib import sha256
 from bson.objectid import ObjectId
 
@@ -11,6 +10,7 @@ import config
 from config import CONFIG
 from database import DB, GLOBAL_COL, InsertHTB, ChatStatus, AddContribution
 from vlp import TextSummarization, ImageCaptioning
+from utils import *
 
 
 class commands_update(interactions.Extension):
@@ -107,11 +107,7 @@ class commands_update(interactions.Extension):
                 else:
                     await ctx.send(f'新增「{keyword}」成功\n未生成摘要\n內容:「{Content}」')
             else:
-                img = interactions.File(
-                    filename=f"img.jpg",
-                    fp=io.BytesIO(requests.get(media.proxy_url).content),
-                    description=Summarization
-                )
+                img = GetImgByURL(media.proxy_url, Summarization)
                 await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」', files=img)
         else:
             # failed

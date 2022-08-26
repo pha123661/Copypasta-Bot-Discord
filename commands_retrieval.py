@@ -8,16 +8,7 @@ import heapq
 import config
 from database import *
 from vlp import TestHit
-
-
-class PriorityEntry(object):
-
-    def __init__(self, priority, data):
-        self.data = data
-        self.priority = priority
-
-    def __lt__(self, other):
-        return self.priority > other.priority  # max heap
+from utils import *
 
 
 class commands_update(interactions.Extension):
@@ -37,11 +28,7 @@ class commands_update(interactions.Extension):
                     to_send += f":\n{doc['Content']}"
                     await ctx.send(to_send)
                 elif doc['Type'] == 2:
-                    img = interactions.File(
-                        filename=f"img.jpg",
-                        fp=io.BytesIO(requests.get(doc['URL']).content),
-                        description=doc['Summarization']
-                    )
+                    img = GetImgByURL(doc['URL'], doc['Summarization'])
                     await ctx.send(to_send, files=img)
                 else:
                     return await send_random(col, CN)
@@ -76,36 +63,34 @@ class commands_update(interactions.Extension):
         await ctx.defer()
         Maximum_Rst = 10
         Rst_Count = 0
-        heap = list()  # min heap
+        heap = list()  # max heap
         for doc in cursor:
             if doc['Type'] == 1:
                 priority = TestHit(query, doc['Keyword'], doc['Content'])
             else:
                 priority = TestHit(query, doc['Keyword'], doc['Summarization'])
-            heapq.heappush(heap, PriorityEntry(
-                priority, doc))  # simulate max heap
+            if priority > 0:
+                heapq.heappush(heap, PriorityEntry(
+                    priority, doc))
 
         for _ in range(len(heap)):
             if Rst_Count >= Maximum_Rst:
                 Rst_Count += 1
                 break
+
             tmp = heapq.heappop(heap)
             priority, doc = tmp.priority, tmp.data
-            if abs(priority) > 0:
-                Rst_Count += 1
-                to_send = f"{'-'*10}\n關鍵字:「{doc['Keyword']}」\n摘要:「{doc['Summarization']}」"
-                if doc['Type'] == 1:
-                    to_send += f":\n{doc['Content']}"
-                    await ctx.author.send(to_send)
-                elif doc['Type'] == 2:
-                    img = interactions.File(
-                        filename=f"img.jpg",
-                        fp=io.BytesIO(requests.get(doc['URL']).content),
-                        description=doc['Summarization']
-                    )
-                    await ctx.author.send(to_send, files=img)
-                else:
-                    Rst_Count -= 1
+
+            Rst_Count += 1
+            to_send = f"{'-'*10}\n關鍵字:「{doc['Keyword']}」\n摘要:「{doc['Summarization']}」"
+            if doc['Type'] == 1:
+                to_send += f":\n{doc['Content']}"
+                await ctx.author.send(to_send)
+            elif doc['Type'] == 2:
+                img = GetImgByURL(doc['URL'], doc['Summarization'])
+                await ctx.author.send(to_send, files=img)
+            else:
+                Rst_Count -= 1
 
         if Rst_Count > Maximum_Rst:
             # exceeded
@@ -133,11 +118,7 @@ class commands_update(interactions.Extension):
                 to_send += f"\n內容:「{doc['Content']}」"
                 await ctx.send(to_send)
             elif doc['Type'] == 2:
-                img = interactions.File(
-                    filename=f"img.jpg",
-                    fp=io.BytesIO(requests.get(doc['URL']).content),
-                    description=doc['Summarization']
-                )
+                img = GetImgByURL(doc['URL'], doc['Summarization'])
                 await ctx.send(to_send, files=img)
             else:
                 content = "不支援的檔案格式 (可能來自telegram)"
