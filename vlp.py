@@ -45,14 +45,10 @@ def TestHit(query: str, *keylist) -> int:
         KeySet.add(Key)
 
         rst = QuerySet & KeySet
-        print(query, Key)
-        print(QuerySet, KeySet, rst)
-        print("#################")
         sum = 0
         for r in rst:
             sum += len(r)
         ALL_MAX = max(ALL_MAX, sum)
-    print(ALL_MAX)
     return ALL_MAX
 
 
