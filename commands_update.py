@@ -1,3 +1,4 @@
+# coding: utf-8
 import interactions
 import pymongo
 import requests
