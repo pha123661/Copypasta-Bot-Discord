@@ -34,7 +34,7 @@ class commands_update(interactions.Extension):
         if (content is not None) and not (1 <= len(content) <= 1900):
             await ctx.send(f"新增失敗：內容長度需介於1~1900字, 目前爲{len(content)}字", ephemeral=True)
             return
-
+        await ctx.defer()
         # preprocess
         if media is None:
             # text
@@ -79,11 +79,9 @@ class commands_update(interactions.Extension):
             if len(content) <= 5:
                 Summarization = ""
             else:
-                await ctx.defer()
                 Summarization = TextSummarization(Content)
 
         elif Type == CONFIG['SETTING']['TYPE']['IMG']:
-            await ctx.defer()
             Summarization = ImageCaptioning(encoded_image)
 
         Rst = InsertHTB(Col, {
@@ -121,7 +119,7 @@ class commands_update(interactions.Extension):
         if not 2 <= len(keyword) <= 30:
             await ctx.send(f"新增失敗：關鍵字長度需介於 2~30 字, 目前爲{len(keyword)}字", ephemeral=True)
             return
-
+        await ctx.defer()
         if ChatStatus[int(ctx.guild_id)].Global:
             col = GLOBAL_COL
             filter = {"$and": [
@@ -181,7 +179,7 @@ class commands_update(interactions.Extension):
                 return True
             else:
                 return False
-
+        await ctx.defer()
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
         for _id in self.QueuedDeletes[int(ctx.guild_id)]:
             await send_confirmation_by_id(_id)
@@ -226,7 +224,7 @@ class commands_update(interactions.Extension):
         if int(ctx.guild_id) not in self.QueuedDeletes:
             await ctx.send("別亂按la")
             return
-
+        await ctx.defer()
         scheduled_tasks = []
         for _id in self.QueuedDeletes[int(ctx.guild_id)]:
             task = asyncio.create_task(delete_from_col_by_id(_id))

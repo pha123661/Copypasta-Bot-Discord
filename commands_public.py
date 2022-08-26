@@ -17,6 +17,7 @@ class commands_public(interactions.Extension):
     @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 對 bot 輸入 /userid 以取得")
     async def linktg(self, ctx: interactions.CommandContext, tguserid: int):
         """和 Telegram 帳號進行連結, 兩個帳號可共享貢獻值"""
+        await ctx.defer()
         if LinkTGAccount(int(ctx.author.id), tguserid):
             await ctx.send(f"連結Telegram成功, 馬上用status查看吧")
         else:
@@ -29,6 +30,7 @@ class commands_public(interactions.Extension):
         if not 1 <= len(nickname) <= 7:
             await ctx.send(f"設定失敗: 暱稱不能大於7個字, 目前{len(nickname)}字")
             return
+        await ctx.defer()
         DCUserID = int(ctx.author.id)
         GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one_and_update(
             filter={"DCUserID": DCUserID}, update={"$set": {"Nickname": nickname}}, upsert=True)
@@ -40,7 +42,7 @@ class commands_public(interactions.Extension):
         """在 私人模式 和 公共模式 之間切換"""
         GuildID = int(ctx.guild_id)
         CSE = ChatStatus.get(GuildID)
-
+        await ctx.defer()
         if CSE != None and CSE.Global:
             # public -> private
             CSE = ChatStatusEntity(GuildID=GuildID, Global=False)
@@ -70,6 +72,7 @@ class commands_public(interactions.Extension):
     async def status(self, ctx: interactions.CommandContext):
         """查看目前模式 和 KO榜"""
         # get leaderboard
+        await ctx.defer()
         Leaderboard = await GetLBInfo(self.client, 3)
         if UserStatus[int(ctx.author.id)].Nickname != None:
             Nickname = UserStatus[int(ctx.author.id)].Nickname

@@ -107,6 +107,7 @@ class commands_update(interactions.Extension):
         if not ChatStatus[int(ctx.guild_id)].Global:
             await ctx.send("執行失敗: 此指令只能在公共模式下執行")
             return
+        await ctx.defer()
         col = GLOBAL_COL
         sort = [("CreateTime", pymongo.DESCENDING)]
         filter = {"From": {"$ne": int(ctx.author.id)}}
