@@ -73,7 +73,7 @@ async def text_normal_message(msg: interactions.Message):
     if doc['Type'] == 1:
         await channel.send(doc['Content'])
     elif doc['Type'] == 2:
-        img = GetImgByURL(doc['URL'], doc['Summarization'])
+        img = GetImg(doc, doc['Summarization'])
         await channel.send(files=img)
 
     cursor.close()

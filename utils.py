@@ -3,15 +3,29 @@ import interactions
 import io
 import requests
 from database import *
+import telegram
+import os
+
+bot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 
 def GetImgByURL(URL: str, description: str = None) -> interactions.File:
+    resp = requests.get(URL)
+    resp.raise_for_status()
     img = interactions.File(
         filename=f"img.jpg",
-        fp=io.BytesIO(requests.get(URL).content),
+        fp=io.BytesIO(resp.content),
         description=description
     )
     return img
+
+
+def GetImg(doc: dict(), description: str = "") -> interactions.File:
+    if doc.get("Platform") == "Telegram" or doc.get("Platform") is None:
+        URL = bot.getFile(doc['Content']).file_path
+    else:
+        URL = doc['URL']
+    return GetImgByURL(URL, description)
 
 
 def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:

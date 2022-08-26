@@ -27,7 +27,7 @@ class commands_update(interactions.Extension):
                     to_send += f":\n{doc['Content']}"
                     await ctx.send(to_send)
                 elif doc['Type'] == 2:
-                    img = GetImgByURL(doc['URL'], doc['Summarization'])
+                    img = GetImg(doc, doc['Summarization'])
                     await ctx.send(to_send, files=img)
                 else:
                     return await send_random(col, CN)
@@ -86,7 +86,7 @@ class commands_update(interactions.Extension):
                 to_send += f":\n{doc['Content']}"
                 await ctx.author.send(to_send)
             elif doc['Type'] == 2:
-                img = GetImgByURL(doc['URL'], doc['Summarization'])
+                img = GetImg(doc, doc['Summarization'])
                 await ctx.author.send(to_send, files=img)
             else:
                 Rst_Count -= 1
@@ -118,7 +118,7 @@ class commands_update(interactions.Extension):
                 to_send += f"\n內容:「{doc['Content']}」"
                 await ctx.send(to_send)
             elif doc['Type'] == 2:
-                img = GetImgByURL(doc['URL'], doc['Summarization'])
+                img = GetImg(doc, doc['Summarization'])
                 await ctx.send(to_send, files=img)
             else:
                 content = "不支援的檔案格式 (可能來自telegram)"
