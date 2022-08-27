@@ -80,7 +80,10 @@ async def GetLBInfo(client, num: int) -> str:
     cursor = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(limit=num, sort=sort)
     LB = ["目前KO榜:"]
     for idx, doc in enumerate(cursor, 1):
-        Username = await GetMaskedNameByID(client, doc.get('DCUserID'))
+        if 'Nickname' in doc:
+            Username = doc['Nickname']
+        else:
+            Username = await GetMaskedNameByID(client, doc.get('DCUserID'))
         LB.append(f"{idx}. {Username}, 貢獻值:{doc['Contribution']}")
     return '\n'.join(LB)
 
