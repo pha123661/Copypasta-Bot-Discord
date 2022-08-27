@@ -43,7 +43,6 @@ def GetImg(doc: dict(), description: str = "") -> interactions.File:
 def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
     global UserStatus
     col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]
-
     tg_info = col.find_one({"TGUserID": TGUserID})
     if tg_info is None:
         return False
@@ -64,15 +63,15 @@ def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
         }
 
     try:
-        dc_old_info = col.find_one_and_update(
-            filter=filter, update=update, upsert=True)
+        new_info = col.find_one_and_update(
+            filter=filter, update=update, upsert=True, return_document=pymongo.ReturnDocument.AFTER)
         UserStatus[DCUserID].TGUserID = TGUserID
-        UserStatus[DCUserID].Contribution = dc_old_info['Contribution'] + \
-            tg_info['Contribution']
+        UserStatus[DCUserID].Contribution = new_info['Contribution']
+        UserStatus[DCUserID].Nickname = new_info['Nickname']
         col.find_one_and_delete({"_id": tg_info['_id']})
-
         return True
-    except:
+    except Exception as e:
+        logger.error(e)
         return False
 
 
