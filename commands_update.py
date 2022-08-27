@@ -61,10 +61,12 @@ class commands_update(interactions.Extension):
                 await ctx.send(f"新增失敗: 附檔格式不支援{media.content_type}")
                 return
 
-        if ChatStatus[int(ctx.guild_id)].Global:
+        GuildID = int(ctx.guild_id)
+        FromID = int(ctx.author.id)
+        if ChatStatus[GuildID].Global:
             Col = GLOBAL_COL
         else:
-            Col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
+            Col = DB[config.GetColNameByGuildID(GuildID)]
 
         # check existing files
         Filter = {"$and": [{"Type": Type}, {
@@ -90,24 +92,30 @@ class commands_update(interactions.Extension):
             "Summarization": Summarization,
             "Content": Content,
             "URL": URL,
-            "From": int(ctx.author.id),
+            "From": FromID,
             "FileUniqueID": FileUniqueID,
         })
 
-        if ChatStatus[int(ctx.guild_id)].Global:
-            AddContribution(int(ctx.author.id), 1)
+        if ChatStatus[GuildID].Global:
+            AddContribution(FromID, 1)
 
         # respond
         if Rst.acknowledged:
             # success
             if Type == CONFIG['SETTING']['TYPE']['TXT']:
                 if not Summarization == "":
-                    await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:「{Content}」')
+                    to_send = f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:「{Content}」'
                 else:
-                    await ctx.send(f'新增「{keyword}」成功\n未生成摘要\n內容:「{Content}」')
+                    to_send = f'新增「{keyword}」成功\n未生成摘要\n內容:「{Content}」'
+                if ChatStatus[GuildID].Global:
+                    to_send += f'\n目前貢獻值: {UserStatus[FromID].Contribution}'
+                await ctx.send(to_send)
             else:
                 img = GetImgByURL(media.proxy_url, Summarization)
-                await ctx.send(f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」', files=img)
+                to_send = f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」'
+                if ChatStatus[GuildID].Global:
+                    to_send += f'\n目前貢獻值: {UserStatus[FromID].Contribution}'
+                await ctx.send(to_send, files=img)
         else:
             # failed
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')

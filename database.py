@@ -2,6 +2,7 @@
 import pymongo
 from datetime import datetime
 from collections import defaultdict
+from typing import *
 
 from config import CONFIG
 
@@ -22,14 +23,18 @@ type HokTseBun struct {
 
 
 class ChatStatusEntity:
-    def __init__(self, GuildID: int, ChatID: int = None, Global: bool = False) -> None:
+    def __init__(self, GuildID: int, ChatID: int, Global: bool, DcDisabledChan: List[int]) -> None:
         self.GuildID: int = GuildID
         self.ChatID: int = ChatID
         self.Global: int = Global
+        if DcDisabledChan is None:
+            self.DcDisabledChan: List[int] = list()
+        else:
+            self.DcDisabledChan: List[int] = DcDisabledChan
 
 
 class UserStatusEntity:
-    def __init__(self, DCUserID: int, TGUserID: int = None, Contribution: int = 0, Nickname: str = None, Banned: bool = False) -> None:
+    def __init__(self, DCUserID: int, TGUserID: int, Contribution: int, Nickname: str, Banned: bool) -> None:
         self.DCUserID: int = DCUserID
         self.TGUserID: int = TGUserID
         self.Contribution: int = Contribution
@@ -103,6 +108,7 @@ def BuildCache():
             GuildID=doc.get('GuildID'),
             ChatID=doc.get('ChatID'),
             Global=doc.get('Global'),
+            DcDisabledChan=doc.get('DcDisabledChan'),
         )
 
     UserStatus = keydefaultdict(UserStatusEntity)
@@ -146,17 +152,35 @@ def AddContribution(DCUserID: int, Delta: int) -> int:
 
     try:
         doc = col.find_one_and_update(
-            filter=filter, update=update, upsert=True)
-        if doc is not None and "Contribution" in doc:
-            UserStatus[DCUserID].Contribution = doc['Contribution'] + Delta
-        else:
-            UserStatus[DCUserID].Contribution = Delta
+            filter=filter, update=update, upsert=True, return_documents=pymongo.ReturnDocument.AFTER)
+        UserStatus[DCUserID].Contribution = doc['Contribution']
         return UserStatus[DCUserID].Contribution
     except:
         return -1
 
 
+def DisableDCChan(GuildID: int, ChanID: int) -> bool:
+    filter = {"GuildID": GuildID}
+    update = {"$addToSet": {"DcDisabledChan": ChanID}}
+    col = GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']]
+    col.find_one_and_update(filter, update)
+    return True
+
+
+def EnableDCChan(GuildID: int, ChanID: int) -> bool:
+    filter = {"GuildID": GuildID}
+    update = {"$pull": {"DcDisabledChan": ChanID}}
+    col = GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']]
+    col.find_one_and_update(filter, update)
+    return True
+
+
+GLOBAL_DB: pymongo.database.Database
+DB: pymongo.database.Database
+GLOBAL_COL: pymongo.database.Collection
 GLOBAL_DB, DB, GLOBAL_COL = InitDB()
 # ChatStatus[int(ctx.guild_id)] = ChatStatusEntity()
 # UserStatus[int(ctx.author.id)] = UserStatusEntity()
+ChatStatus: List[ChatStatusEntity]
+UserStatus: List[UserStatusEntity]
 ChatStatus, UserStatus = BuildCache()

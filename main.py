@@ -24,6 +24,7 @@ def main():
     bot.load("commands_update")
     bot.load("commands_retrieval")
     bot.load("commands_public")
+    bot.load("commands_management")
     bot.load('interactions.ext.files')
     bot.start()
 
@@ -40,9 +41,12 @@ async def on_message_create(msg: interactions.Message):
     """提到類似關鍵字時 bot 會插嘴"""
     if msg.author.id == bot.me.id or msg.content == '':
         return
-    if len(msg.attachments) == 0:
+    elif len(msg.attachments) == 0:
+        if msg.channel_id in ChatStatus[int(msg.guild_id)].DcDisabledChan:
+            return
         await text_normal_message(msg)
-
+        return
+    
 
 async def text_normal_message(msg: interactions.Message):
     channel = await msg.get_channel()

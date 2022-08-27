@@ -45,7 +45,7 @@ class commands_public(interactions.Extension):
         await ctx.defer()
         if CSE != None and CSE.Global:
             # public -> private
-            CSE = ChatStatusEntity(GuildID=GuildID, Global=False)
+            CSE.Global = False
             UpdateChatStatus(CSE)
             await ctx.send("切換成功, 已關閉公共模式")
             return
@@ -63,7 +63,7 @@ class commands_public(interactions.Extension):
         if UserStatus[UserID].Banned:
             await ctx.send("你被ban了 不能開啓公共模式 覺得莫名奇妙的話也一定是bug 請找作者💩")
             return
-        CSE = ChatStatusEntity(GuildID=GuildID, Global=True)
+        CSE.Global = True
         UpdateChatStatus(CSE)
 
         await ctx.send("切換成功, 已開啓公共模式")
