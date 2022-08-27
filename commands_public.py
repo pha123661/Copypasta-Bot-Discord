@@ -47,16 +47,16 @@ class commands_public(interactions.Extension):
     async def toggle(self, ctx: interactions.CommandContext):
         """在 私人模式 和 公共模式 之間切換"""
         GuildID = int(ctx.guild_id)
-        CSE = ChatStatus.get(GuildID)
+
         await ctx.defer()
-        if CSE != None and CSE.Global:
+        if ChatStatus.get(GuildID) is not None and ChatStatus.get(GuildID).Global:
             # public -> private
-            CSE.Global = False
-            UpdateChatStatus(CSE)
+            ChatStatus.get(GuildID).Global = False
+            UpdateChatStatus(ChatStatus.get(GuildID))
             await ctx.send("切換成功, 已關閉公共模式")
             return
 
-        if CSE == None:
+        if ChatStatus.get(GuildID) is None:
             content = """第一次進入公共模式，請注意：
 1. 這裡的資料庫是所有人共享的
 2. 只能刪除自己新增的東西
@@ -65,14 +65,15 @@ class commands_public(interactions.Extension):
 5. 公共資料庫的內容和 Telegram 版本是共享的"""
             await ctx.send(content)
             logger.info(f"first time entering global mode Guild: {GuildID}")
+            ChatStatus[GuildID] = ChatStatusEntity(GuildID=GuildID)
 
         UserID = int(ctx.author.id)
         # private -> public
         if UserStatus[UserID].Banned:
             await ctx.send("你被ban了 不能開啓公共模式 覺得莫名奇妙的話也一定是bug 請找作者💩")
             return
-        CSE.Global = True
-        UpdateChatStatus(CSE)
+        ChatStatus[GuildID].Global = True
+        UpdateChatStatus(ChatStatus[GuildID])
 
         await ctx.send("切換成功, 已開啓公共模式")
 
