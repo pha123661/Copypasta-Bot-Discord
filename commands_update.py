@@ -185,13 +185,17 @@ class commands_update(interactions.Extension):
             if doc is None:
                 await ctx.send(f"找不到 {_id}, 請確認刪除時沒有切換模式")
             else:
+                to_send: List[str] = [f"摘要:「{doc['Summarization']}」"]
                 if doc['Type'] == 1:
-                    content = doc['Content']
+                    to_send.append(f"內容:「{doc['Content']}」")
+                    await ctx.send("\n".join(to_send))
                 elif doc['Type'] == 2:
-                    content = doc['URL']
+                    img = GetImg(doc, doc['Summarization'])
+                    await ctx.send("\n".join(to_send), files=img)
                 else:
-                    content = "不支援的檔案格式 (可能來自Telegram)"
-                await ctx.send(f"摘要:「{doc['Summarization']}」\n內容:\n{content}")
+                    to_send.append("內容:「不支援的檔案格式 (可能來自Telegram)」")
+                    await ctx.send("\n".join(to_send))
+
             if doc is not None:
                 return True
             else:
@@ -214,13 +218,13 @@ class commands_update(interactions.Extension):
             )
         ))
 
-    @interactions.extension_component("deletion_cancel")
+    @ interactions.extension_component("deletion_cancel")
     async def deletion_candel(self, ctx: interactions.CommandContext):
         if int(ctx.guild_id) in self.QueuedDeletes:
             del self.QueuedDeletes[int(ctx.guild_id)]
         await ctx.send("我其實不會把按鈕關掉 沒按也沒差 笑死")
 
-    @interactions.extension_component("deletion")
+    @ interactions.extension_component("deletion")
     async def deletion_handler(self, ctx: interactions.CommandContext):
         async def delete_from_col_by_id(_id: str) -> bool:
             if ChatStatus[int(ctx.guild_id)].Global:
