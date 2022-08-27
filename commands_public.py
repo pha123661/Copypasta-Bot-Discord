@@ -85,6 +85,7 @@ class commands_public(interactions.Extension):
         DCUserID = int(ctx.author.id)
         GuildID = int(ctx.guild_id)
         ChanID = int(ctx.channel_id)
+
         Leaderboard = await GetLBInfo(self.client, 3)
         if UserStatus[DCUserID].Nickname != None:
             Nickname = UserStatus[DCUserID].Nickname
@@ -92,19 +93,75 @@ class commands_public(interactions.Extension):
             Nickname = "尚未設定暱稱"
 
         # get status
-        to_send: List[str] = [f"{Leaderboard}", '-' * 10]
         if ChatStatus[int(ctx.guild_id)].Global:
-            to_send.append("伺服器目前處於 公共模式")
+            guild_mode = "公共模式"
         else:
-            to_send.append("伺服器目前處於 私人模式")
+            guild_mode = "私人模式"
 
         if ChanID in ChatStatus[GuildID].DcDisabledChan:
-            to_send.append("頻道目前處於 閉嘴狀態")
+            chan_mode = "閉嘴狀態"
+        else:
+            chan_mode = "bot會插嘴"
 
-        to_send.append(f"暱稱:「{Nickname}」")
-        to_send.append(f"貢獻值: {UserStatus[DCUserID].Contribution}")
+        # get current ranking
+        Curser = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].aggregate([
+            {"$setWindowFields": {
+                "sortBy": {"Contributions": -1},
+                "output": {"globRnk": {"$rank": {}}}
+            }},
+            {"$match": {
+                "DCUserID": int(ctx.author.id)
+            }},
+            {"$limit": 1}
+        ])
 
-        await ctx.send("\n".join(to_send))
+        ranking = next(iter(Curser))['globRnk']
+        if ranking <= 3:
+            ranking = f"第 {ranking} 名, WOW 沒人生 🎉大家一起恭喜你🎉"
+        elif ranking <= 10:
+            ranking = f"第 {ranking} 名, 厲害了 前十名誒"
+        else:
+            ranking = f"第 {ranking} 名"
+
+        await ctx.send("", embeds=interactions.Embed(
+            title="狀態查詢",
+            description=Leaderboard,
+            thumbnail=interactions.EmbedImageStruct(
+                url="https://imgur.com/lCHwufq.jpg"),
+            color=0x406C96,
+            timestamp=datetime.now(),
+            footer=interactions.EmbedFooter(
+                text="一大坨迷因感謝您的使用",
+                icon_url="https://imgur.com/LdjownE.jpg",
+            ),
+            fields=[
+                interactions.EmbedField(
+                    name="伺服器狀態",
+                    value=guild_mode,
+                    inline=True
+                ),
+                interactions.EmbedField(
+                    name="頻道狀態",
+                    value=chan_mode,
+                    inline=True,
+                ),
+                interactions.EmbedField(
+                    name='暱稱',
+                    value=Nickname,
+                    inline=True
+                ),
+                interactions.Embed(
+                    name='貢獻值',
+                    value=UserStatus[DCUserID].Contribution,
+                    inline=True
+                ),
+                interactions.Embed(
+                    name='貢獻值排行',
+                    value=ranking,
+                    inline=True
+                ),
+            ]
+        ))
 
     @ interactions.extension_command()
     async def dump(self, ctx: interactions.CommandContext):
