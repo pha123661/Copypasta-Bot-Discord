@@ -171,7 +171,7 @@ async def text_normal_message(msg: interactions.Message):
         await channel.send(files=img)
     cursor.close()
     logger.info(
-        f"normal msg w/ {len(heapq)} candidates and maximum priority of {tmp.priority}")
+        f"normal msg w/ {len(Candidates)} candidates and maximum priority of {tmp.priority}")
 
 
 if __name__ == '__main__':
