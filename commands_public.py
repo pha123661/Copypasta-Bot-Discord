@@ -26,7 +26,7 @@ class commands_public(interactions.Extension):
     @interactions.extension_command()
     @interactions.option(description="想要設定的暱稱, 設定後可以更改、不能刪除")
     async def nickname(self, ctx: interactions.CommandContext, nickname: str):
-        """設定自己的暱稱, 顯示排行榜用"""
+        """設定自己的暱稱, 跨平台時才能顯示哦! (不然會是“DC使用者”)"""
         if not 1 <= len(nickname) <= 7:
             await ctx.send(f"設定失敗: 暱稱不能大於7個字, 目前{len(nickname)}字")
             return
