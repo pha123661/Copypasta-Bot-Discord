@@ -103,20 +103,25 @@ class commands_update(interactions.Extension):
         # respond
         if Rst.acknowledged:
             # success
+            to_send: List[str] = [f'新增「{keyword}」成功']
+            if Summarization != "":
+                to_send.append(f'自動生成的摘要爲:「{Summarization}」')
+            else:
+                to_send.append('未生成摘要')
+
             if Type == CONFIG['SETTING']['TYPE']['TXT']:
-                if not Summarization == "":
-                    to_send = f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」\n內容:「{Content}」'
-                else:
-                    to_send = f'新增「{keyword}」成功\n未生成摘要\n內容:「{Content}」'
+                to_send.append(f'內容:「{Content}」')
                 if ChatStatus[GuildID].Global:
-                    to_send += f'\n目前貢獻值: {UserStatus[FromID].Contribution}'
-                await ctx.send(to_send)
+                    to_send.append(
+                        f'目前貢獻值: {UserStatus[FromID].Contribution}')
+                await ctx.send("\n".join(to_send))
+
             else:
                 img = GetImgByURL(media.proxy_url, Summarization)
-                to_send = f'新增「{keyword}」成功\n自動生成的摘要爲:「{Summarization}」'
                 if ChatStatus[GuildID].Global:
-                    to_send += f'\n目前貢獻值: {UserStatus[FromID].Contribution}'
-                await ctx.send(to_send, files=img)
+                    to_send.append(
+                        f'目前貢獻值: {UserStatus[FromID].Contribution}')
+                await ctx.send("\n".join(to_send), files=img)
         else:
             # failed
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')

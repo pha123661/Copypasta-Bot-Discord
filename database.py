@@ -150,13 +150,10 @@ def AddContribution(DCUserID: int, Delta: int) -> int:
     filter = {"DCUserID": DCUserID}
     update = {"$inc": {"Contribution": Delta}}
 
-    try:
-        doc = col.find_one_and_update(
-            filter=filter, update=update, upsert=True, return_documents=pymongo.ReturnDocument.AFTER)
-        UserStatus[DCUserID].Contribution = doc['Contribution']
-        return UserStatus[DCUserID].Contribution
-    except:
-        return -1
+    doc = col.find_one_and_update(
+        filter=filter, update=update, upsert=True, return_document=pymongo.ReturnDocument.AFTER)
+    UserStatus[DCUserID].Contribution = doc['Contribution']
+    return UserStatus[DCUserID].Contribution
 
 
 def DisableDCChan(GuildID: int, ChanID: int) -> bool:

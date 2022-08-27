@@ -2,9 +2,11 @@
 import interactions
 import config
 import heapq
+import base64
+from hashlib import sha256
 from database import *
 from config import CONFIG
-from vlp import TestHit
+from vlp import TestHit, ImageCaptioning
 from utils import *
 
 if len(CONFIG['SETTING']['GUILD_IDs']) > 0:
@@ -46,7 +48,92 @@ async def on_message_create(msg: interactions.Message):
             return
         await text_normal_message(msg)
         return
-    
+    elif len(msg.attachments) == 1:
+        await image_add_message(msg)
+
+
+async def image_add_message(msg: interactions.Message):
+    channel = await msg.get_channel()
+    keyword = msg.content
+    media = msg.attachments[0]
+    # image
+    if media.content_type.startswith("image") and media.content_type != "image/gif":
+        Type = CONFIG['SETTING']['TYPE']['IMG']
+        Content = media.proxy_url
+        URL = media.url
+
+        img_data = requests.get(URL).content
+        encoded_image = base64.b64encode(img_data).decode('UTF-8')
+        FileUniqueID = sha256(encoded_image.encode()).hexdigest()
+
+    elif media.content_type.startswith("video"):
+        await channel.send(f"新增失敗: 附檔格式不支援{media.content_type}")
+        return
+    else:
+        await channel.send(f"新增失敗: 附檔格式不支援{media.content_type}")
+        return
+
+    to_be_deleted_msg = await msg.reply("運算中……")
+
+    GuildID = int(msg.guild_id)
+    FromID = int(msg.author.id)
+    if ChatStatus[GuildID].Global:
+        Col = GLOBAL_COL
+    else:
+        Col = DB[config.GetColNameByGuildID(GuildID)]
+
+    # check existing files
+    Filter = {"$and": [{"Type": Type}, {
+        "Keyword": keyword}, {"FileUniqueID": FileUniqueID}]}
+    if Col.find_one(Filter) is not None:
+        # find duplicates
+        await channel.send("傳過了啦 腦霧?", ephemeral=True)
+        return
+
+    # insert
+    Summarization = ImageCaptioning(encoded_image)
+
+    Rst = InsertHTB(Col, {
+        "Type": Type,
+        "Keyword": keyword,
+        "Summarization": Summarization,
+        "Content": Content,
+        "URL": URL,
+        "From": FromID,
+        "FileUniqueID": FileUniqueID,
+    })
+
+    if ChatStatus[GuildID].Global:
+        AddContribution(FromID, 1)
+
+    # respond
+    if Rst.acknowledged:
+        # success
+        to_send: List[str] = [f'新增「{keyword}」成功']
+        if Summarization != "":
+            to_send.append(f'自動生成的摘要爲:「{Summarization}」')
+        else:
+            to_send.append('未生成摘要')
+
+        if Type == CONFIG['SETTING']['TYPE']['TXT']:
+            to_send.append(f'內容:「{Content}」')
+            if ChatStatus[GuildID].Global:
+                to_send.append(
+                    f'目前貢獻值: {UserStatus[FromID].Contribution}')
+            await channel.send("\n".join(to_send))
+
+        else:
+            img = GetImgByURL(media.proxy_url, Summarization)
+            if ChatStatus[GuildID].Global:
+                to_send.append(
+                    f'目前貢獻值: {UserStatus[FromID].Contribution}')
+            await channel.send("\n".join(to_send), files=img)
+    else:
+        # failed
+        await channel.send(f'新增失敗 資料庫發生不明錯誤')
+
+    await to_be_deleted_msg.delete("運算完成, 刪除提示訊息")
+
 
 async def text_normal_message(msg: interactions.Message):
     channel = await msg.get_channel()
