@@ -50,7 +50,7 @@ class commands_update(interactions.Extension):
         for i in range(number):
             await send_random(col, CN)
             if i != number - 1:
-                await ctx.channel.send('-' * 20)
+                await ctx.channel.send('-' * 10)
 
     @interactions.extension_command()
     @interactions.option(description="搜尋關鍵字")
@@ -117,7 +117,13 @@ class commands_update(interactions.Extension):
         sort = [("CreateTime", pymongo.DESCENDING)]
         filter = {"From": {"$ne": int(ctx.author.id)}}
         Curser = col.find(filter, limit=number, sort=sort)
-        for doc in Curser:
+        for idx, doc in enumerate(Curser):
+            if idx == 0:
+                await ctx.get_channel()
+                SENDER = ctx
+            else:
+                SENDER = ctx.channel
+                await SENDER.send('-' * 10)
             to_send = [
                 f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」",
                 f"名稱：「{doc['Keyword']}」",
@@ -125,13 +131,13 @@ class commands_update(interactions.Extension):
             ]
             if doc['Type'] == 1:
                 to_send.append(f"內容:「{doc['Content']}」")
-                await ctx.send("\n".join(to_send))
+                await SENDER.send("\n".join(to_send))
             elif doc['Type'] == 2:
                 img = GetImg(doc, doc['Summarization'])
-                await ctx.send("\n".join(to_send), files=img)
+                await SENDER.send("\n".join(to_send), files=img)
             else:
                 to_send.append("內容:「不支援的檔案格式 (可能來自telegram)」")
-                await ctx.send("\n".join(to_send))
+                await SENDER.send("\n".join(to_send))
         logger.info(f"get recent {number}")
 
 
