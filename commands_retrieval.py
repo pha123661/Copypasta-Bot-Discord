@@ -26,14 +26,14 @@ class commands_update(interactions.Extension):
                 to_send = f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"
                 if doc['Type'] == 1:
                     to_send += f":\n{doc['Content']}"
-                    await ctx.send(to_send)
+                    await ctx.channel.send(to_send)
                 elif doc['Type'] == 2:
                     img = GetImg(doc, doc['Summarization'])
-                    await ctx.send(to_send, files=img)
+                    await ctx.channel.send(to_send, files=img)
                 else:
                     return await send_random(col, CN)
             else:
-                await ctx.send('發生錯誤')
+                await ctx.channel.send('發生錯誤')
 
         if ChatStatus[int(ctx.guild_id)].Global:
             col = GLOBAL_COL
@@ -44,10 +44,13 @@ class commands_update(interactions.Extension):
         if CN == 0:
             await ctx.send("資料庫沒東西是在抽屁")
             return
-
+        await ctx.send(f"以下爲抽取{number}篇的結果：")
+        await ctx.get_channel()
         number = min(number, CN)
-        for _ in range(number):
+        for i in range(number):
             await send_random(col, CN)
+            if i != number - 1:
+                await ctx.channel.send('-' * 20)
 
     @interactions.extension_command()
     @interactions.option(description="搜尋關鍵字")

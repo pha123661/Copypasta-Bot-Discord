@@ -183,18 +183,18 @@ class commands_update(interactions.Extension):
                 filter = {"_id": ObjectId(_id)}
             doc = col.find_one(filter)
             if doc is None:
-                await ctx.send(f"找不到 {_id}, 請確認刪除時沒有切換模式")
+                await ctx.channel.send(f"找不到 {_id}, 請確認刪除時沒有切換模式")
             else:
                 to_send: List[str] = [f"摘要:「{doc['Summarization']}」"]
                 if doc['Type'] == 1:
                     to_send.append(f"內容:「{doc['Content']}」")
-                    await ctx.send("\n".join(to_send))
+                    await ctx.channel.send("\n".join(to_send))
                 elif doc['Type'] == 2:
                     img = GetImg(doc, doc['Summarization'])
-                    await ctx.send("\n".join(to_send), files=img)
+                    await ctx.channel.send("\n".join(to_send), files=img)
                 else:
                     to_send.append("內容:「不支援的檔案格式 (可能來自Telegram)」")
-                    await ctx.send("\n".join(to_send))
+                    await ctx.channel.send("\n".join(to_send))
 
             if doc is not None:
                 return True
@@ -202,11 +202,12 @@ class commands_update(interactions.Extension):
                 return False
 
         await ctx.defer()
+        await ctx.get_channel()
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
         for _id in self.QueuedDeletes[int(ctx.guild_id)]:
             await send_confirmation_by_id(_id)
 
-        await ctx.send("請確認是否刪除以上內容?", components=interactions.ActionRow.new(
+        await ctx.send("請確認是否刪除以下內容?", components=interactions.ActionRow.new(
             interactions.Button(
                 style=interactions.ButtonStyle.PRIMARY,
                 label="是",
@@ -219,13 +220,13 @@ class commands_update(interactions.Extension):
             )
         ))
 
-    @ interactions.extension_component("deletion_cancel")
+    @interactions.extension_component("deletion_cancel")
     async def deletion_candel(self, ctx: interactions.CommandContext):
         if int(ctx.guild_id) in self.QueuedDeletes:
             del self.QueuedDeletes[int(ctx.guild_id)]
         await ctx.send("我其實不會把按鈕關掉 沒按也沒差 笑死")
 
-    @ interactions.extension_component("deletion")
+    @interactions.extension_component("deletion")
     async def deletion_handler(self, ctx: interactions.CommandContext):
         async def delete_from_col_by_id(_id: str) -> bool:
             if ChatStatus[int(ctx.guild_id)].Global:

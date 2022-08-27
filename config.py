@@ -29,7 +29,7 @@ def InitLogger(path: str) -> logging.Logger:
     rootLogger = logging.getLogger()
     rootLogger.setLevel(logging.INFO)
 
-    fileHandler = logging.FileHandler(path)
+    fileHandler = logging.FileHandler(path, encoding='utf8')
     fileHandler.setFormatter(logFormatter)
     rootLogger.addHandler(fileHandler)
 
