@@ -27,6 +27,7 @@ def main():
     bot.load("commands_retrieval")
     bot.load("commands_public")
     bot.load("commands_management")
+    bot.load("commands_tutorial")
     bot.load('interactions.ext.files')
     bot.start()
 

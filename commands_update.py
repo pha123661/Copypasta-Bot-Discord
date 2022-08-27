@@ -200,6 +200,7 @@ class commands_update(interactions.Extension):
                 return True
             else:
                 return False
+
         await ctx.defer()
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
         for _id in self.QueuedDeletes[int(ctx.guild_id)]:
