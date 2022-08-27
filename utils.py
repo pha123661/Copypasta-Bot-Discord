@@ -5,7 +5,9 @@ import requests
 from database import *
 import telegram
 import os
+import dotenv
 
+dotenv.load_dotenv()
 bot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 

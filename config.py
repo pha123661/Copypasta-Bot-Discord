@@ -1,6 +1,9 @@
 import os
 import toml
 from pprint import pprint
+import dotenv
+
+dotenv.load_dotenv()
 
 
 def InitConfig(path: str) -> dict:
