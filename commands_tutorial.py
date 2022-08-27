@@ -48,21 +48,18 @@ class commands_tutorial(interactions.Extension):
                     label="/delete",
                     custom_id='EXP DEL',
                 ),
-
-            ),
-            interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
                     label="/random",
                     custom_id='EXP RANDOM',
                 ),
+            ),
+            interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
                     label="/search",
                     custom_id='EXP SERC',
                 ),
-            ),
-            interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
                     label="/toggle",
@@ -82,6 +79,11 @@ class commands_tutorial(interactions.Extension):
                 ),
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
+                    label="/nickname",
+                    custom_id='EXP NICK',
+                ),
+                interactions.Button(
+                    style=interactions.ButtonStyle.SECONDARY,
                     label="/dump",
                     custom_id='EXP DUMP',
                 ),
@@ -89,25 +91,27 @@ class commands_tutorial(interactions.Extension):
             interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
-                    label="/nickname",
-                    custom_id='EXP NICK',
-                ),
-                interactions.Button(
-                    style=interactions.ButtonStyle.SECONDARY,
                     label="/linktg",
                     custom_id='EXP LINK',
                 ),
-            ),
-            interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.DANGER,
                     label="取消",
-                    custom_id='EXP STAT',
+                    custom_id='EXP CANCL',
                 ),
             ),
-
         ]
-        await ctx.send("請選擇要觀看的說明", components=components)
+
+        def chunk(lst, n):
+            for i in range(0, len(lst), n):
+                yield lst[i:i + n]
+
+        for idx, sp_com in enumerate(chunk(components, 4)):
+            if idx == 0:
+                await ctx.get_channel()
+                await ctx.send("請選擇要觀看的說明", components=sp_com)
+            else:
+                await ctx.channel.send(components=sp_com)
 
     async def tutorial_buttons(self, ctx: interactions.CommandContext):
         print(ctx.callback, ctx.data.custom_id,
