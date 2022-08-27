@@ -73,18 +73,31 @@ class commands_public(interactions.Extension):
         """查看目前模式 和 KO榜"""
         # get leaderboard
         await ctx.defer()
+        DCUserID = int(ctx.author.id)
+        GuildID = int(ctx.guild_id)
+        ChanID = int(ctx.channel_id)
         Leaderboard = await GetLBInfo(self.client, 3)
-        if UserStatus[int(ctx.author.id)].Nickname != None:
-            Nickname = UserStatus[int(ctx.author.id)].Nickname
+        if UserStatus[DCUserID].Nickname != None:
+            Nickname = UserStatus[DCUserID].Nickname
         else:
             Nickname = "尚未設定暱稱"
-        # get status
-        if ChatStatus[int(ctx.guild_id)].Global:
-            await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 公共模式\n暱稱:「{Nickname}」\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
-        else:
-            await ctx.send(f"{Leaderboard}\n{'-'*10}\n目前處於 私人模式\n暱稱:「{Nickname}」\n貢獻值爲{UserStatus[int(ctx.author.id)].Contribution}")
 
-    @interactions.extension_command()
+        # get status
+        to_send: List[str] = [f"{Leaderboard}", '-' * 10]
+        if ChatStatus[int(ctx.guild_id)].Global:
+            to_send.append("伺服器目前處於 公共模式")
+        else:
+            to_send.append("伺服器目前處於 私人模式")
+
+        if ChanID in ChatStatus[GuildID].DcDisabledChan:
+            to_send.append("頻道目前處於 閉嘴狀態")
+
+        to_send.append(f"暱稱:「{Nickname}」")
+        to_send.append(f"貢獻值: {UserStatus[DCUserID].Contribution}")
+
+        await ctx.send("\n".join(to_send))
+
+    @ interactions.extension_command()
     async def dump(self, ctx: interactions.CommandContext):
         """將目前私人資料庫內由**自己**新增的內容複製到公共資料庫"""
         await ctx.defer()
