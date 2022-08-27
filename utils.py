@@ -86,17 +86,20 @@ async def GetLBInfo(client, num: int) -> str:
     return '\n'.join(LB)
 
 
-async def GetMaskedNameByID(client, DCUserID: int) -> str:
-    if DCUserID is None:
+async def GetMaskedNameByID(client, FromID: int) -> str:
+    if FromID is None:
         return "Telegram 用戶"
 
     doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one(
-        {"DCUserID": DCUserID})
+        {"$or": [{"DCUserID": FromID}, {"TGUserID": FromID}]})
 
-    if doc is not None and doc.get("Nickname") != None:
-        return doc['Nickname']
+    if doc is not None:
+        if doc.get("Nickname") != None:
+            return doc['Nickname']
+        elif doc.get("DCUserID") != None:
+            FromID = doc.get("DCUserID")
     try:
-        Name = await interactions.get(client, interactions.User, object_id=DCUserID)
+        Name = await interactions.get(client, interactions.User, object_id=FromID)
     except Exception as e:
         return "Telegram 用戶"
 
