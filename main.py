@@ -128,9 +128,12 @@ async def image_add_message(msg: interactions.Message):
                 to_send.append(
                     f'目前貢獻值: {UserStatus[FromID].Contribution}')
             await channel.send("\n".join(to_send), files=img)
+            logger.info(
+                f"add successfully: Keyword: {keyword}, Summarization: {Summarization}")
     else:
         # failed
         await channel.send(f'新增失敗 資料庫發生不明錯誤')
+        logger.error(f"add failed: DB_S_Rst: {Rst}")
 
     await to_be_deleted_msg.delete("運算完成, 刪除提示訊息")
 
@@ -148,7 +151,7 @@ async def text_normal_message(msg: interactions.Message):
     sort = [('Type', pymongo.ASCENDING)]
     cursor = col.find(filter=filter, sort=sort)
 
-    Candidates = list()  # max heap
+    Candidates: List[PriorityEntry] = list()  # max heap
     for doc in cursor:
         priority = TestHit(Query, doc['Keyword'], doc['Summarization'])
         priority /= len(Query)
@@ -166,8 +169,10 @@ async def text_normal_message(msg: interactions.Message):
     elif doc['Type'] == 2:
         img = GetImg(doc, doc['Summarization'])
         await channel.send(files=img)
-
     cursor.close()
+    logger.info(
+        f"normal msg w/ {len(heapq)} candidates and maximum priority of {tmp.priority}")
+
 
 if __name__ == '__main__':
     main()
