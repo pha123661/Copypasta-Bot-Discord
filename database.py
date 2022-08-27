@@ -23,7 +23,7 @@ type HokTseBun struct {
 
 
 class ChatStatusEntity:
-    def __init__(self, GuildID: int, ChatID: int, Global: bool, DcDisabledChan: List[int]) -> None:
+    def __init__(self, GuildID: int, ChatID: int = None, Global: bool = None, DcDisabledChan: List[int] = None) -> None:
         self.GuildID: int = GuildID
         self.ChatID: int = ChatID
         self.Global: int = Global
@@ -34,7 +34,7 @@ class ChatStatusEntity:
 
 
 class UserStatusEntity:
-    def __init__(self, DCUserID: int, TGUserID: int, Contribution: int, Nickname: str, Banned: bool) -> None:
+    def __init__(self, DCUserID: int, TGUserID: int = None, Contribution: int = 0, Nickname: str = None, Banned: bool = False) -> None:
         self.DCUserID: int = DCUserID
         self.TGUserID: int = TGUserID
         self.Contribution: int = Contribution
