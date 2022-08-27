@@ -4,7 +4,7 @@ from pprint import pprint
 from datetime import datetime, timezone
 
 import config
-from config import CONFIG
+from config import CONFIG, logger
 from database import *
 from utils import *
 
@@ -20,8 +20,12 @@ class commands_public(interactions.Extension):
         await ctx.defer()
         if LinkTGAccount(int(ctx.author.id), tguserid):
             await ctx.send(f"連結Telegram成功, 馬上用status查看吧")
+            logger.info(
+                f"link successfully: DC: {int(ctx.author.id)} and TG: {tguserid}")
         else:
             await ctx.send("發生錯誤, 可能是 Telegram 帳號不存在 / 已完成過連結, 不是的話請找作者")
+            logger.warning(
+                f"link failed: DC: {int(ctx.author.id)} and TG: {tguserid}")
 
     @interactions.extension_command()
     @interactions.option(description="想要設定的暱稱, 設定後可以更改、不能刪除")
@@ -36,6 +40,8 @@ class commands_public(interactions.Extension):
             filter={"DCUserID": DCUserID}, update={"$set": {"Nickname": nickname}}, upsert=True)
         UserStatus[DCUserID].Nickname = nickname
         await ctx.send(f"設定暱稱「{nickname}」成功")
+        logger.info(
+            f"set nickname successfully: DCUserID: {DCUserID}, Nickname: {nickname}")
 
     @interactions.extension_command()
     async def toggle(self, ctx: interactions.CommandContext):
@@ -58,6 +64,8 @@ class commands_public(interactions.Extension):
 4. 可以再次使用 /toggle 來退出
 5. 公共資料庫的內容和 Telegram 版本是共享的"""
             await ctx.send(content)
+            logger.info(f"first time entering global mode Guild: {GuildID}")
+
         UserID = int(ctx.author.id)
         # private -> public
         if UserStatus[UserID].Banned:
@@ -126,6 +134,8 @@ class commands_public(interactions.Extension):
 
         Newcon = AddContribution(DCUserID, con)
         await ctx.send(f"成功把{con}坨大便倒進公共資料庫, {'倒了個寂寞, 'if con == 0 else ''}目前累計貢獻{Newcon}坨")
+        logger.info(
+            f"dump successfully: con:{con} by DCUserID:{DCUserID}")
 
 
 def setup(client):

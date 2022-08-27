@@ -5,7 +5,7 @@ import heapq
 import base64
 from hashlib import sha256
 from database import *
-from config import CONFIG
+from config import CONFIG, logger
 from vlp import TestHit, ImageCaptioning
 from utils import *
 

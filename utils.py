@@ -7,13 +7,18 @@ import telegram
 import os
 import dotenv
 
+from config import logger
+
 dotenv.load_dotenv()
 bot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 
 def GetImgByURL(URL: str, description: str = None) -> interactions.File:
     resp = requests.get(URL)
-    resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except Exception as e:
+        logger.error(e)
     img = interactions.File(
         filename=f"img.jpg",
         fp=io.BytesIO(resp.content),
@@ -24,7 +29,12 @@ def GetImgByURL(URL: str, description: str = None) -> interactions.File:
 
 def GetImg(doc: dict(), description: str = "") -> interactions.File:
     if doc.get("Platform") == "Telegram" or doc.get("Platform") is None:
-        URL = bot.getFile(doc['Content']).file_path
+        try:
+            URL = bot.getFile(doc['Content']).file_path
+        except Exception as e:
+            logger.error(e)
+            if 'URL' in doc:
+                return GetImgByURL(doc['URL'])
     else:
         URL = doc['URL']
     return GetImgByURL(URL, description)
@@ -83,10 +93,13 @@ async def GetMaskedNameByID(client, DCUserID: int) -> str:
     doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one(
         {"DCUserID": DCUserID})
 
-    if doc.get("Nickname") != None:
+    if doc is not None and doc.get("Nickname") != None:
         return doc['Nickname']
+    try:
+        Name = await interactions.get(client, interactions.User, object_id=DCUserID)
+    except Exception as e:
+        return "Telegram 用戶"
 
-    Name = await interactions.get(client, interactions.User, object_id=DCUserID)
     Name = Name.username
     Mask = '*' * max(len(Name) // 3, 1)
     UnmaskIdx = (len(Name) - len(Mask)) // 2

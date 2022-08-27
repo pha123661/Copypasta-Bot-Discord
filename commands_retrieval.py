@@ -5,6 +5,7 @@ import random
 import heapq
 
 import config
+from config import logger
 from database import *
 from vlp import TestHit
 from utils import *
@@ -99,6 +100,7 @@ class commands_update(interactions.Extension):
         await ctx.send(f"「{query}」的搜尋結果共 {Rst_Count} 筆, 請查看與 bot 的私訊")
         await ctx.author.send(f"「{query}」的搜尋結果共 {Rst_Count} 筆")
         cursor.close()
+        logger.info(f"search query: “{query}” with {Rst_Count} results")
 
     @interactions.extension_command()
     @interactions.option(description="要顯示幾篇, 預設爲3", min_value=1, max_value=10)
@@ -111,17 +113,23 @@ class commands_update(interactions.Extension):
         col = GLOBAL_COL
         sort = [("CreateTime", pymongo.DESCENDING)]
         filter = {"From": {"$ne": int(ctx.author.id)}}
-        Curser = col.find(filter, limit=number).sort(sort)
+        Curser = col.find(filter, limit=number, sort=sort)
         for doc in Curser:
-            to_send = f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」\n名稱：「{doc['Keyword']}」\n摘要：「{doc['Summarization']}」"
+            to_send = [
+                f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」",
+                f"名稱：「{doc['Keyword']}」",
+                f"摘要：「{doc['Summarization']}」"
+            ]
             if doc['Type'] == 1:
-                to_send += f"\n內容:「{doc['Content']}」"
-                await ctx.send(to_send)
+                to_send.append(f"內容:「{doc['Content']}」")
+                await ctx.send("\n".join(to_send))
             elif doc['Type'] == 2:
                 img = GetImg(doc, doc['Summarization'])
-                await ctx.send(to_send, files=img)
+                await ctx.send("\n".join(to_send), files=img)
             else:
-                content = "不支援的檔案格式 (可能來自telegram)"
+                to_send.append("內容:「不支援的檔案格式 (可能來自telegram)」")
+                await ctx.send("\n".join(to_send))
+        logger.info(f"get recent {number}")
 
 
 def setup(client):

@@ -122,9 +122,12 @@ class commands_update(interactions.Extension):
                     to_send.append(
                         f'目前貢獻值: {UserStatus[FromID].Contribution}')
                 await ctx.send("\n".join(to_send), files=img)
+            logger.info(
+                f"add successfully: Keyword: {keyword}, Summarization: {Summarization}")
         else:
             # failed
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')
+            logger.error(f"add failed: DB_S_Rst: {Rst}")
 
     @interactions.extension_command()
     @interactions.option(description="欲刪除複製文的關鍵字")
