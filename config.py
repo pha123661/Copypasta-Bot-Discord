@@ -32,7 +32,7 @@ def InitLogger(path: str) -> logging.Logger:
     fileHandler.setFormatter(logFormatter)
     rootLogger.addHandler(fileHandler)
 
-    consoleHandler = logging.StreamHandler()
+    consoleHandler = logging.StreamHandler(sys.stdout)
     consoleHandler.setFormatter(logFormatter)
     rootLogger.addHandler(consoleHandler)
 
