@@ -27,6 +27,7 @@ def InitLogger(path: str) -> logging.Logger:
         "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] [%(module)-16s:%(lineno)-4s] %(message)s")
 
     rootLogger = logging.getLogger()
+    rootLogger.setLevel(logging.DEBUG)
 
     fileHandler = logging.FileHandler(path)
     fileHandler.setFormatter(logFormatter)
