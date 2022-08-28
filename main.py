@@ -126,7 +126,7 @@ async def image_add_message(msg: interactions.Message):
             await channel.send("\n".join(to_send))
 
         else:
-            img = GetImgByURL(media.proxy_url, Summarization)
+            img = await GetImgByURL(media.proxy_url, Summarization)
             if ChatStatus[GuildID].Global:
                 to_send.append(
                     f'目前貢獻值: {UserStatus[FromID].Contribution}')
@@ -169,7 +169,7 @@ async def text_normal_message(msg: interactions.Message):
     if doc['Type'] == 1:
         await channel.send(doc['Content'])
     elif doc['Type'] == 2:
-        img = GetImg(doc, doc['Summarization'])
+        img = await GetImg(doc, doc['Summarization'])
         await channel.send(files=img)
     cursor.close()
     logger.info(

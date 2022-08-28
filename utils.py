@@ -6,6 +6,8 @@ from database import *
 import telegram
 import os
 import dotenv
+from awaits.awaitable import awaitable
+
 
 from config import logger
 
@@ -13,6 +15,7 @@ dotenv.load_dotenv()
 bot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 
+@awaitable
 def GetImgByURL(URL: str, description: str = None) -> interactions.File:
     resp = requests.get(URL)
     try:
@@ -27,19 +30,20 @@ def GetImgByURL(URL: str, description: str = None) -> interactions.File:
     return img
 
 
-def GetImg(doc: dict(), description: str = "") -> interactions.File:
+async def GetImg(doc: dict(), description: str = "") -> interactions.File:
     if doc.get("Platform") == "Telegram" or doc.get("Platform") is None:
         try:
             URL = bot.getFile(doc['Content']).file_path
         except Exception as e:
             logger.error(e)
             if 'URL' in doc:
-                return GetImgByURL(doc['URL'])
+                return await GetImgByURL(doc['URL'])
     else:
         URL = doc['URL']
-    return GetImgByURL(URL, description)
+    return await GetImgByURL(URL, description)
 
 
+@awaitable
 def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
     global UserStatus
     col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]

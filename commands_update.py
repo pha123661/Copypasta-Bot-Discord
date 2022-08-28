@@ -119,7 +119,7 @@ class commands_update(interactions.Extension):
                 await ctx.send("\n".join(to_send))
 
             else:
-                img = GetImgByURL(media.proxy_url, Summarization)
+                img = await GetImgByURL(media.proxy_url, Summarization)
                 if ChatStatus[GuildID].Global:
                     to_send.append(
                         f'目前貢獻值: {UserStatus[FromID].Contribution}')
@@ -196,7 +196,7 @@ class commands_update(interactions.Extension):
                     to_send.append(f"內容:「{content}」")
                     await ctx.channel.send("\n".join(to_send))
                 elif doc['Type'] == 2:
-                    img = GetImg(doc, doc['Summarization'])
+                    img = await GetImg(doc, doc['Summarization'])
                     await ctx.channel.send("\n".join(to_send), files=img)
                 else:
                     to_send.append("內容:「不支援的檔案格式 (可能來自Telegram)」")

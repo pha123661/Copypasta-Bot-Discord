@@ -18,7 +18,7 @@ class commands_public(interactions.Extension):
     async def linktg(self, ctx: interactions.CommandContext, tguserid: int):
         """和 Telegram 帳號進行連結, 兩個帳號可共享貢獻值"""
         await ctx.defer()
-        if LinkTGAccount(int(ctx.author.id), tguserid):
+        if await LinkTGAccount(int(ctx.author.id), tguserid):
             await ctx.send(f"連結Telegram成功, 馬上用status查看吧")
             logger.info(
                 f"link successfully: DC: {int(ctx.author.id)} and TG: {tguserid}")
