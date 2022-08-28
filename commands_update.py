@@ -21,7 +21,7 @@ class commands_update(interactions.Extension):
         self.client: interactions.Client = client
         self.QueuedDeletes = dict()
 
-    @interactions.extension_command()
+    @interactions.extension_command(dm_permission=False)
     @interactions.option(description="關鍵字,不宜過長或重複")
     @interactions.option(description="複製文, 和圖片擇一傳送即可, 長度 < 6 的複製文不會生成摘要")
     @interactions.option(description="圖片, 和複製文擇一傳送即可")
@@ -131,7 +131,7 @@ class commands_update(interactions.Extension):
             await ctx.send(f'新增失敗 資料庫發生不明錯誤')
             logger.error(f"add failed: DB_S_Rst: {Rst}")
 
-    @interactions.extension_command()
+    @interactions.extension_command(dm_permission=False)
     @interactions.option(description="欲刪除複製文的關鍵字")
     async def delete(self, ctx: interactions.CommandContext, keyword: str):
         """刪除複製文, 若有重複關鍵字 最多只會顯示5篇"""

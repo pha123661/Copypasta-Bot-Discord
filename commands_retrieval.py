@@ -15,7 +15,7 @@ class commands_update(interactions.Extension):
     def __init__(self, client) -> None:
         self.client: interactions.Client = client
 
-    @interactions.extension_command()
+    @interactions.extension_command(dm_permission=False)
     @interactions.option(description="要抽幾篇, 預設爲1", min_value=1, max_value=5)
     async def random(self, ctx: interactions.CommandContext, number: int = 1):
         """隨機從資料庫抽取 ”number“ 篇, 預設爲 1 篇"""
@@ -52,7 +52,7 @@ class commands_update(interactions.Extension):
         for _ in range(number):
             await send_random(col, CN)
 
-    @interactions.extension_command()
+    @interactions.extension_command(dm_permission=False)
     @interactions.option(description="搜尋關鍵字")
     async def search(self, ctx: interactions.CommandContext, query: str):
         """在資料庫的 “摘要” “關鍵字” 和 “內容” 中進行搜尋"""
@@ -106,7 +106,7 @@ class commands_update(interactions.Extension):
         cursor.close()
         logger.info(f"search query: “{query}” with {Rst_Count} results")
 
-    @interactions.extension_command()
+    @interactions.extension_command(dm_permission=False)
     @interactions.option(description="要顯示幾篇, 預設爲3", min_value=1, max_value=5)
     async def recent(self, ctx: interactions.CommandContext, number: int = 3):
         """顯示公共資料庫最新加入的 ”number“ 篇, 預設爲 3 篇"""
