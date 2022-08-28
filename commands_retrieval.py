@@ -69,9 +69,9 @@ class commands_update(interactions.Extension):
         heap = list()  # max heap
         for doc in cursor:
             if doc['Type'] == 1:
-                priority = TestHit(query, doc['Keyword'], doc['Content'])
+                priority = await TestHit(query, doc['Keyword'], doc['Content'])
             else:
-                priority = TestHit(query, doc['Keyword'], doc['Summarization'])
+                priority = await TestHit(query, doc['Keyword'], doc['Summarization'])
             if priority > 0:
                 heapq.heappush(heap, PriorityEntry(
                     priority, doc))

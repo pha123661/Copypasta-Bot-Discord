@@ -113,10 +113,14 @@ class commands_tutorial(interactions.Extension):
             else:
                 await ctx.channel.send(components=sp_com)
 
+    @interactions.extension_component("button_1")
+    @interactions.extension_component("button_2")
+    @interactions.extension_component("button_3")
     async def tutorial_buttons(self, ctx: interactions.CommandContext):
-        print(ctx.callback, ctx.data.custom_id,
-              ctx.message, ctx.type, ctx.token)
-        interactions.Embed()
+        pass
+        # print(ctx.callback, ctx.data.custom_id,
+        #       ctx.message, ctx.type, ctx.token)
+        # interactions.Embed()
 
 
 def setup(client):

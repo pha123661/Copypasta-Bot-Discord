@@ -7,6 +7,8 @@ import hfapi
 import jieba
 import jieba.analyse
 import requests
+from awaits.awaitable import awaitable
+
 
 from random import choice
 from config import CONFIG
@@ -22,6 +24,7 @@ HFclient = hfapi.Client(choice(CONFIG['API']['HF']['TOKENs']))
 Translator = googletrans.Translator()
 
 
+@awaitable()
 def TestHit(query: str, *keylist) -> int:
     # query_set = GenerateJieba(query)
     # keys = GenerateJieba(doc['Keyword'])
@@ -52,6 +55,7 @@ def TestHit(query: str, *keylist) -> int:
     return ALL_MAX
 
 
+@awaitable()
 def TextSummarization(content: str) -> str:
     global HFclient
     count = len(CONFIG['API']['HF']['TOKENs'])
@@ -73,6 +77,7 @@ def TextSummarization(content: str) -> str:
     return rst[0]["summary_text"]
 
 
+@awaitable()
 def ImageCaptioning(encoded_image: str) -> str:
     r = requests.post(
         url='https://hf.space/embed/OFA-Sys/OFA-Image_Caption/+/api/predict/',

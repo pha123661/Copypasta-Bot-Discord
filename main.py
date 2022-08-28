@@ -3,6 +3,7 @@ import interactions
 import config
 import heapq
 import base64
+import aiohttp
 from hashlib import sha256
 from database import *
 from config import CONFIG, logger
@@ -62,8 +63,9 @@ async def image_add_message(msg: interactions.Message):
         Type = CONFIG['SETTING']['TYPE']['IMG']
         Content = media.proxy_url
         URL = media.url
-
-        img_data = requests.get(URL).content
+        async with aiohttp.ClientSession() as session:
+            async with session.get(URL) as response:
+                img_data = await response.content.read()
         encoded_image = base64.b64encode(img_data).decode('UTF-8')
         FileUniqueID = sha256(encoded_image.encode()).hexdigest()
 
@@ -92,9 +94,9 @@ async def image_add_message(msg: interactions.Message):
         return
 
     # insert
-    Summarization = ImageCaptioning(encoded_image)
+    Summarization = await ImageCaptioning(encoded_image)
 
-    Rst = InsertHTB(Col, {
+    Rst = await InsertHTB(Col, {
         "Type": Type,
         "Keyword": keyword,
         "Summarization": Summarization,
@@ -105,7 +107,7 @@ async def image_add_message(msg: interactions.Message):
     })
 
     if ChatStatus[GuildID].Global:
-        AddContribution(FromID, 1)
+        await AddContribution(FromID, 1)
 
     # respond
     if Rst.acknowledged:
@@ -154,7 +156,7 @@ async def text_normal_message(msg: interactions.Message):
 
     Candidates: List[PriorityEntry] = list()  # max heap
     for doc in cursor:
-        priority = TestHit(Query, doc['Keyword'], doc['Summarization'])
+        priority = await TestHit(Query, doc['Keyword'], doc['Summarization'])
         priority /= len(Query)
         if priority >= CONFIG['SETTING']['BOT_TALK_THRESHOLD']:
             heapq.heappush(Candidates, PriorityEntry(priority, doc))
@@ -164,7 +166,6 @@ async def text_normal_message(msg: interactions.Message):
 
     tmp = heapq.heappop(Candidates)
     doc = tmp.data
-    TestHit(Query, doc['Keyword'], doc['Summarization'])
     if doc['Type'] == 1:
         await channel.send(doc['Content'])
     elif doc['Type'] == 2:

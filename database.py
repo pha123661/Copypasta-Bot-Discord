@@ -3,6 +3,8 @@ import pymongo
 from datetime import datetime
 from collections import defaultdict
 from typing import *
+from awaits.awaitable import awaitable
+
 
 from config import CONFIG
 
@@ -126,6 +128,7 @@ def BuildCache():
     return ChatStatus, UserStatus
 
 
+@awaitable
 def InsertHTB(Collection: pymongo.database.Collection, HTB: dict) -> pymongo.results.InsertOneResult:
     """Inserts HTB and returns its result"""
     HTB['CreateTime'] = datetime.now()
@@ -133,6 +136,7 @@ def InsertHTB(Collection: pymongo.database.Collection, HTB: dict) -> pymongo.res
     return Collection.insert_one(HTB)
 
 
+@awaitable
 def UpdateChatStatus(CSE: ChatStatusEntity):
     """updates the chatstatus in db"""
     global ChatStatus
@@ -143,6 +147,7 @@ def UpdateChatStatus(CSE: ChatStatusEntity):
     ChatStatus[CSE.GuildID] = CSE
 
 
+@awaitable
 def AddContribution(DCUserID: int, Delta: int) -> int:
     """increaments user contribution and returns current contribution"""
     global UserStatus
@@ -156,6 +161,7 @@ def AddContribution(DCUserID: int, Delta: int) -> int:
     return UserStatus[DCUserID].Contribution
 
 
+@awaitable
 def DisableDCChan(GuildID: int, ChanID: int) -> bool:
     filter = {"GuildID": GuildID}
     update = {"$addToSet": {"DcDisabledChan": ChanID}}
@@ -164,6 +170,7 @@ def DisableDCChan(GuildID: int, ChanID: int) -> bool:
     return True
 
 
+@awaitable
 def EnableDCChan(GuildID: int, ChanID: int) -> bool:
     filter = {"GuildID": GuildID}
     update = {"$pull": {"DcDisabledChan": ChanID}}

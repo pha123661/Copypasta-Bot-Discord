@@ -20,12 +20,12 @@ class command_management(interactions.Extension):
 
         if ChanID not in ChatStatus[GuildID].DcDisabledChan:
             ChatStatus[GuildID].DcDisabledChan.append(ChanID)
-            DisableDCChan(GuildID, ChanID)
+            await DisableDCChan(GuildID, ChanID)
             await ctx.send("我閉嘴了啦")
             return
         else:
             ChatStatus[GuildID].DcDisabledChan.remove(ChanID)
-            EnableDCChan(GuildID, ChanID)
+            await EnableDCChan(GuildID, ChanID)
             await ctx.send("我開始吵了哦")
             return
 

@@ -1,12 +1,13 @@
 # coding: utf-8
 import interactions
 import pymongo
-import requests
 import base64
 import asyncio
 from typing import *
 from hashlib import sha256
 from bson.objectid import ObjectId
+import aiohttp
+
 
 import config
 from config import CONFIG
@@ -25,7 +26,7 @@ class commands_update(interactions.Extension):
     @interactions.option(description="複製文, 和圖片擇一傳送即可, 長度 < 6 的複製文不會生成摘要")
     @interactions.option(description="圖片, 和複製文擇一傳送即可")
     async def add(self, ctx: interactions.CommandContext, keyword: str, content: str = None, media: interactions.api.models.message.Attachment = None):
-        """新增複製文"""
+        """新增複製文/圖"""
         if content is None and media is None:
             await ctx.send("新增失敗：請給我複製文或圖片", ephemeral=True)
             return
@@ -50,8 +51,9 @@ class commands_update(interactions.Extension):
                 Type = CONFIG['SETTING']['TYPE']['IMG']
                 Content = media.proxy_url
                 URL = media.url
-
-                img_data = requests.get(URL).content
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(URL) as response:
+                        img_data = await response.content.read()
                 encoded_image = base64.b64encode(img_data).decode('UTF-8')
                 FileUniqueID = sha256(encoded_image.encode()).hexdigest()
 
@@ -82,12 +84,12 @@ class commands_update(interactions.Extension):
             if len(content) <= 5:
                 Summarization = ""
             else:
-                Summarization = TextSummarization(Content)
+                Summarization = await TextSummarization(Content)
 
         elif Type == CONFIG['SETTING']['TYPE']['IMG']:
-            Summarization = ImageCaptioning(encoded_image)
+            Summarization = await ImageCaptioning(encoded_image)
 
-        Rst = InsertHTB(Col, {
+        Rst = await InsertHTB(Col, {
             "Type": Type,
             "Keyword": keyword,
             "Summarization": Summarization,
@@ -98,7 +100,7 @@ class commands_update(interactions.Extension):
         })
 
         if ChatStatus[GuildID].Global:
-            AddContribution(FromID, 1)
+            await AddContribution(FromID, 1)
 
         # respond
         if Rst.acknowledged:

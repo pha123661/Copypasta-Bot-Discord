@@ -52,7 +52,7 @@ class commands_public(interactions.Extension):
         if ChatStatus.get(GuildID) is not None and ChatStatus.get(GuildID).Global:
             # public -> private
             ChatStatus.get(GuildID).Global = False
-            UpdateChatStatus(ChatStatus.get(GuildID))
+            await UpdateChatStatus(ChatStatus.get(GuildID))
             await ctx.send("切換成功, 已關閉公共模式")
             return
 
@@ -73,7 +73,7 @@ class commands_public(interactions.Extension):
             await ctx.send("你被ban了 不能開啓公共模式 覺得莫名奇妙的話也一定是bug 請找作者💩")
             return
         ChatStatus[GuildID].Global = True
-        UpdateChatStatus(ChatStatus[GuildID])
+        await UpdateChatStatus(ChatStatus[GuildID])
 
         await ctx.send("切換成功, 已開啓公共模式")
 
@@ -190,7 +190,7 @@ class commands_public(interactions.Extension):
         except pymongo.errors.BulkWriteError as bwe:
             con = bwe.details['nInserted']
 
-        Newcon = AddContribution(DCUserID, con)
+        Newcon = await AddContribution(DCUserID, con)
         await ctx.send(f"成功把{con}坨大便倒進公共資料庫, {'倒了個寂寞, 'if con == 0 else ''}目前累計貢獻{Newcon}坨")
         logger.info(
             f"dump successfully: con:{con} by DCUserID:{DCUserID}")
