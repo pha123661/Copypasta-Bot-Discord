@@ -237,7 +237,20 @@ class commands_update(interactions.Extension):
     async def deletion_candel(self, ctx: interactions.CommandContext):
         if int(ctx.guild_id) in self.QueuedDeletes:
             del self.QueuedDeletes[int(ctx.guild_id)]
-        await ctx.send("我其實不會把按鈕關掉 沒按也沒差 笑死")
+        await ctx.edit("已取消刪除", components=interactions.ActionRow.new(
+            interactions.Button(
+                style=interactions.ButtonStyle.PRIMARY,
+                label="是",
+                custom_id='deletion',
+                disabled=True,
+            ),
+            interactions.Button(
+                style=interactions.ButtonStyle.SECONDARY,
+                label="否",
+                custom_id='deletion_cancel',
+                disabled=True,
+            )
+        ))
 
     @interactions.extension_component("deletion")
     async def deletion_handler(self, ctx: interactions.CommandContext):

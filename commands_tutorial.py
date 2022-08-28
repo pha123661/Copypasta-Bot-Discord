@@ -1,4 +1,6 @@
+import os
 import interactions
+from config import CONFIG
 
 
 class commands_tutorial(interactions.Extension):
@@ -26,7 +28,7 @@ class commands_tutorial(interactions.Extension):
             interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
-                    label="我要如何新增圖片",
+                    label="我要如何新增圖片?",
                     custom_id='EXP HOWMEDIA',
                 ),
             ),
@@ -51,7 +53,7 @@ class commands_tutorial(interactions.Extension):
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
                     label="/random",
-                    custom_id='EXP RANDOM',
+                    custom_id='EXP RAND',
                 ),
             ),
             interactions.ActionRow.new(
@@ -84,15 +86,20 @@ class commands_tutorial(interactions.Extension):
                 ),
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
-                    label="/dump",
-                    custom_id='EXP DUMP',
+                    label="/linktg",
+                    custom_id='EXP LINK',
                 ),
             ),
             interactions.ActionRow.new(
                 interactions.Button(
                     style=interactions.ButtonStyle.SECONDARY,
-                    label="/linktg",
-                    custom_id='EXP LINK',
+                    label="/dump",
+                    custom_id='EXP DUMP',
+                ),
+                interactions.Button(
+                    style=interactions.ButtonStyle.SECONDARY,
+                    label="/shutup",
+                    custom_id='EXP STUP',
                 ),
                 interactions.Button(
                     style=interactions.ButtonStyle.DANGER,
@@ -113,14 +120,19 @@ class commands_tutorial(interactions.Extension):
             else:
                 await ctx.channel.send(components=sp_com)
 
-    @interactions.extension_component("button_1")
-    @interactions.extension_component("button_2")
-    @interactions.extension_component("button_3")
-    async def tutorial_buttons(self, ctx: interactions.CommandContext):
-        pass
-        # print(ctx.callback, ctx.data.custom_id,
-        #       ctx.message, ctx.type, ctx.token)
-        # interactions.Embed()
+
+async def tutorial_handler(ctx: interactions.CommandContext, command: str) -> None:
+    """Sends tutorial"""
+    if command == "CANCL":
+        await ctx.edit("已取消觀看教學, 因爲技術限制 上面那排收不起來 笑死", components=[])
+        return
+    with open(os.path.join(CONFIG['SETTING']['EXAMPLE_TXT_DIR'], f"{command}.txt"), mode='r', encoding='utf8') as f:
+        try:
+            img = interactions.File(filename=os.path.join(
+                CONFIG['SETTING']['EXAMPLE_PIC_DIR'], f"{command}.jpg"))
+            await ctx.send(f.read(), files=img)
+        except FileNotFoundError:
+            await ctx.send(f.read())
 
 
 def setup(client):

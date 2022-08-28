@@ -1,14 +1,17 @@
 # coding: utf-8
 import interactions
-import config
 import heapq
 import base64
 import aiohttp
 from hashlib import sha256
+
+import config
 from database import *
+from utils import *
+from commands_tutorial import tutorial_handler
 from config import CONFIG, logger
 from vlp import TestHit, ImageCaptioning
-from utils import *
+
 
 if len(CONFIG['SETTING']['GUILD_IDs']) > 0:
     bot = interactions.Client(
@@ -54,6 +57,12 @@ async def on_message_create(msg: interactions.Message):
         await image_add_message(msg)
 
 
+@bot.event()
+async def on_component(ctx: interactions.CommandContext):
+    if ctx.data.custom_id.startswith("EXP "):
+        await tutorial_handler(ctx, ctx.data.custom_id[4:])
+
+
 async def image_add_message(msg: interactions.Message):
     channel = await msg.get_channel()
     keyword = msg.content
@@ -76,8 +85,6 @@ async def image_add_message(msg: interactions.Message):
         await channel.send(f"新增失敗: 附檔格式不支援{media.content_type}")
         return
 
-    to_be_deleted_msg = await msg.reply("運算中……")
-
     GuildID = int(msg.guild_id)
     FromID = int(msg.author.id)
     if ChatStatus[GuildID].Global:
@@ -90,9 +97,10 @@ async def image_add_message(msg: interactions.Message):
         "Keyword": keyword}, {"FileUniqueID": FileUniqueID}]}
     if Col.find_one(Filter) is not None:
         # find duplicates
-        await channel.send("傳過了啦 腦霧?", ephemeral=True)
+        await channel.send("傳過了啦 腦霧?")
         return
 
+    to_be_deleted_msg = await msg.reply("運算中……")
     # insert
     Summarization = await ImageCaptioning(encoded_image)
 
@@ -118,21 +126,11 @@ async def image_add_message(msg: interactions.Message):
         else:
             to_send.append('未生成摘要')
 
-        if Type == CONFIG['SETTING']['TYPE']['TXT']:
-            to_send.append(f'內容:「{Content}」')
-            if ChatStatus[GuildID].Global:
-                to_send.append(
-                    f'目前貢獻值: {UserStatus[FromID].Contribution}')
-            await channel.send("\n".join(to_send))
-
-        else:
-            img = await GetImgByURL(media.proxy_url, Summarization)
-            if ChatStatus[GuildID].Global:
-                to_send.append(
-                    f'目前貢獻值: {UserStatus[FromID].Contribution}')
-            await channel.send("\n".join(to_send), files=img)
-            logger.info(
-                f"add successfully: Keyword: {keyword}, Summarization: {Summarization}")
+        if ChatStatus[GuildID].Global:
+            to_send.append(f'目前貢獻值: {UserStatus[FromID].Contribution}')
+        await channel.send("\n".join(to_send))
+        logger.info(
+            f"add successfully: Keyword: {keyword}, Summarization: {Summarization}")
     else:
         # failed
         await channel.send(f'新增失敗 資料庫發生不明錯誤')

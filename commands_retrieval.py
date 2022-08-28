@@ -16,7 +16,7 @@ class commands_update(interactions.Extension):
         self.client: interactions.Client = client
 
     @interactions.extension_command()
-    @interactions.option(description="要抽幾篇, 預設爲1", min_value=1, max_value=10)
+    @interactions.option(description="要抽幾篇, 預設爲1", min_value=1, max_value=5)
     async def random(self, ctx: interactions.CommandContext, number: int = 1):
         """隨機從資料庫抽取 ”number“ 篇, 預設爲 1 篇"""
         async def send_random(col: pymongo.collection.Collection, CN):
@@ -85,13 +85,14 @@ class commands_update(interactions.Extension):
             priority, doc = tmp.priority, tmp.data
 
             Rst_Count += 1
-            to_send = f"{'-'*10}\n關鍵字:「{doc['Keyword']}」\n摘要:「{doc['Summarization']}」"
+            to_send = [f"關鍵字:「{doc['Keyword']}」",
+                       f"摘要:「{doc['Summarization']}」"]
             if doc['Type'] == 1:
-                to_send += f":\n{doc['Content']}"
-                await ctx.author.send(to_send)
+                to_send .append(f":{doc['Content']}")
+                await ctx.author.send("\n".join(to_send))
             elif doc['Type'] == 2:
                 img = await GetImg(doc, doc['Summarization'])
-                await ctx.author.send(to_send, files=img)
+                await ctx.author.send("\n".join(to_send), files=img)
             else:
                 Rst_Count -= 1
 
@@ -106,7 +107,7 @@ class commands_update(interactions.Extension):
         logger.info(f"search query: “{query}” with {Rst_Count} results")
 
     @interactions.extension_command()
-    @interactions.option(description="要顯示幾篇, 預設爲3", min_value=1, max_value=10)
+    @interactions.option(description="要顯示幾篇, 預設爲3", min_value=1, max_value=5)
     async def recent(self, ctx: interactions.CommandContext, number: int = 3):
         """顯示公共資料庫最新加入的 ”number“ 篇, 預設爲 3 篇"""
         if not ChatStatus[int(ctx.guild_id)].Global:
@@ -123,7 +124,6 @@ class commands_update(interactions.Extension):
                 SENDER = ctx
             else:
                 SENDER = ctx.channel
-                await SENDER.send('-' * 10)
             to_send = [
                 f"來自：「{await GetMaskedNameByID(self.client, doc['From'])}」",
                 f"名稱：「{doc['Keyword']}」",

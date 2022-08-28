@@ -1,0 +1,10 @@
+**/linktg 指令說明**
+[指令用途] 和 Telegram 帳號進行連接
+[指令格式] /linktg {Telegram user id}
+[需要注意] 
+1. 想取得 Telegram user id, 可以跟 TG 版本的 bot 說 "/userid"
+2. 連接後會共享 貢獻值 和 暱稱
+3. 不同平台上傳的內容, 只能由那個平台刪除
+   (EX: DC上傳的, 不能在TG進行刪除, 改code太麻煩了)
+
+實際使用範例如下圖:

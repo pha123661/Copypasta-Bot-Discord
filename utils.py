@@ -37,7 +37,7 @@ async def GetImg(doc: dict(), description: str = "") -> interactions.File:
         except Exception as e:
             logger.error(e)
             if 'URL' in doc:
-                return await GetImgByURL(doc['URL'])
+                return await GetImgByURL(doc['URL'], description)
     else:
         URL = doc['URL']
     return await GetImgByURL(URL, description)
