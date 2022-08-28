@@ -29,6 +29,8 @@ class commands_update(interactions.Extension):
                     await ctx.channel.send(to_send)
                 elif doc['Type'] == 2:
                     img = await GetImg(doc, doc['Summarization'])
+                    if img is None:
+                        return await send_random(col, CN)
                     await ctx.channel.send(to_send, files=img)
                 else:
                     return await send_random(col, CN)
@@ -47,10 +49,8 @@ class commands_update(interactions.Extension):
         await ctx.send(f"以下爲抽取{number}篇的結果：")
         await ctx.get_channel()
         number = min(number, CN)
-        for i in range(number):
+        for _ in range(number):
             await send_random(col, CN)
-            if i != number - 1:
-                await ctx.channel.send('-' * 10)
 
     @interactions.extension_command()
     @interactions.option(description="搜尋關鍵字")
