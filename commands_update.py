@@ -206,7 +206,8 @@ class commands_update(interactions.Extension):
         await ctx.defer()
         await ctx.get_channel()
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
-        for _id in self.QueuedDeletes[int(ctx.guild_id)]:
+        for idx, _id in enumerate(self.QueuedDeletes[int(ctx.guild_id)], 1):
+            await ctx.channel.send("-" * 4 + f" 第 {idx} 筆" + "-" * 4)
             await send_confirmation_by_id(_id)
 
         await ctx.send("請確認是否刪除以下內容?", components=interactions.ActionRow.new(
