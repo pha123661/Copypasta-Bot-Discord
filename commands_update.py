@@ -189,7 +189,11 @@ class commands_update(interactions.Extension):
             else:
                 to_send: List[str] = [f"摘要:「{doc['Summarization']}」"]
                 if doc['Type'] == 1:
-                    to_send.append(f"內容:「{doc['Content']}」")
+                    if len(doc['Content']) >= 100:
+                        content = doc['Content'][:97] + "……"
+                    else:
+                        content = doc['Content']
+                    to_send.append(f"內容:「{content}」")
                     await ctx.channel.send("\n".join(to_send))
                 elif doc['Type'] == 2:
                     img = GetImg(doc, doc['Summarization'])
@@ -205,23 +209,29 @@ class commands_update(interactions.Extension):
 
         await ctx.defer()
         await ctx.get_channel()
+
+        await ctx.send(f"以下爲 {len(selected_values)} 筆的內容預覽:")
+
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
         for idx, _id in enumerate(self.QueuedDeletes[int(ctx.guild_id)], 1):
             await ctx.channel.send("-" * 4 + f" 第 {idx} 筆" + "-" * 4)
             await send_confirmation_by_id(_id)
 
-        await ctx.send("請確認是否刪除以下內容?", components=interactions.ActionRow.new(
-            interactions.Button(
-                style=interactions.ButtonStyle.PRIMARY,
-                label="是",
-                custom_id='deletion',
-            ),
-            interactions.Button(
-                style=interactions.ButtonStyle.SECONDARY,
-                label="否",
-                custom_id='deletion_cancel',
+        await ctx.channel.send(
+            f"請確認是否刪除以上 {len(selected_values)} 筆內容?",
+            components=interactions.ActionRow.new(
+                interactions.Button(
+                    style=interactions.ButtonStyle.PRIMARY,
+                    label="是",
+                    custom_id='deletion',
+                ),
+                interactions.Button(
+                    style=interactions.ButtonStyle.SECONDARY,
+                    label="否",
+                    custom_id='deletion_cancel',
+                )
             )
-        ))
+        )
 
     @interactions.extension_component("deletion_cancel")
     async def deletion_candel(self, ctx: interactions.CommandContext):
