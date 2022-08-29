@@ -64,10 +64,15 @@ async def on_component(ctx: interactions.CommandContext):
 
 @bot.event()
 async def on_guild_create(guild: interactions.Guild):
-    chan = await interactions.get(bot, interactions.Channel,
-                                  parent_id=guild.id, object_id=guild.system_channel_id)
-    await chan.send("歡迎使用, 請使用 /example 查看教學, 或使用 /toggle 進入公共模式!")
-    logger.info(f"Joined new guild: {guild}, guild_id: {guild.id}")
+    GuildID = int(guild.id)
+    doc = await GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].find_one({"GuildID": GuildID})
+    if doc is None:
+        await GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].insert_one({"GuildID": GuildID, "Global": False})
+        chan = await interactions.get(bot, interactions.Channel,
+                                      parent_id=guild.id, object_id=guild.system_channel_id)
+        await chan.send("歡迎使用, 請使用 /example 查看教學, 或使用 /toggle 進入公共模式!")
+        logger.info(
+            f"Joined new guild: {guild}, ppl#: {guild.member_count}, guild_id: {guild.id}")
 
 
 async def image_add_message(msg: interactions.Message):
