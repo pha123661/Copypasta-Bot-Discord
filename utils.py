@@ -1,7 +1,6 @@
 # coding: utf-8
 import interactions
 import io
-import requests
 from database import *
 import telegram
 import os
