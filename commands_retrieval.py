@@ -22,18 +22,23 @@ class commands_update(interactions.Extension):
         async def send_random(col: pymongo.collection.Collection, CN):
             random_idx = random.randint(0, CN - 1)  # [0, CN)
             doc = await col.find_one(skip=random_idx)
-            if doc is not None:
-                to_send = ["----------", f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"]
-                if doc['Type'] == 1:
-                    to_send.append(f"內容:「{doc['Content']}」")
-                    await ctx.channel.send("\n".join(to_send))
-                elif doc['Type'] == 2:
-                    img = await GetImg(doc, doc['Summarization'])
-                    await ctx.channel.send("\n".join(to_send), files=img)
+            try:
+                if doc is not None:
+                    to_send = ["----------",
+                               f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"]
+                    if doc['Type'] == 1:
+                        to_send.append(f"內容:「{doc['Content']}」")
+                        await ctx.channel.send("\n".join(to_send))
+                    elif doc['Type'] == 2:
+                        img = await GetImg(doc, doc['Summarization'])
+                        await ctx.channel.send("\n".join(to_send), files=img)
+                    else:
+                        return await send_random(col, CN)
                 else:
-                    return await send_random(col, CN)
-            else:
-                await ctx.channel.send('發生錯誤')
+                    await ctx.channel.send('發生錯誤')
+            except interactions.LibraryException:
+                await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
+                return
 
         if ChatStatus[int(ctx.guild_id)].Global:
             col = GLOBAL_COL
@@ -45,7 +50,10 @@ class commands_update(interactions.Extension):
             await ctx.send("資料庫沒東西是在抽屁")
             return
         await ctx.send(f"以下爲抽取{number}篇的結果：")
-        await ctx.get_channel()
+        try:
+            await ctx.get_channel()
+        except interactions.LibraryException:
+            await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
         await asyncio.gather(*[send_random(col, CN) for _ in range(number)])
 
     @interactions.extension_command(dm_permission=False)
@@ -120,7 +128,11 @@ class commands_update(interactions.Extension):
         idx = 0
         async for doc in Curser:
             if idx == 0:
-                await ctx.get_channel()
+                try:
+                    await ctx.get_channel()
+                except interactions.LibraryException:
+                    await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
+                    return
                 SENDER = ctx
             else:
                 SENDER = ctx.channel

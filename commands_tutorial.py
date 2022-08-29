@@ -115,10 +115,17 @@ class commands_tutorial(interactions.Extension):
 
         for idx, sp_com in enumerate(chunk(components, 4)):
             if idx == 0:
-                await ctx.get_channel()
+                try:
+                    await ctx.get_channel()
+                except interactions.LibraryException:
+                    await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
+                    return
                 await ctx.send("請選擇要觀看的說明", components=sp_com)
             else:
-                await ctx.channel.send(components=sp_com)
+                try:
+                    await ctx.channel.send(components=sp_com)
+                except interactions.LibraryException:
+                    await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
 
 
 async def tutorial_handler(ctx: interactions.CommandContext, command: str) -> None:

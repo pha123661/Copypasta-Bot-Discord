@@ -208,14 +208,22 @@ class commands_update(interactions.Extension):
                 return False
 
         await ctx.defer()
-        await ctx.get_channel()
+        try:
+            await ctx.get_channel()
+        except interactions.LibraryException:
+            await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
+            return
 
         await ctx.send(f"以下爲 {len(selected_values)} 筆的內容預覽:")
 
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
-        for idx, _id in enumerate(self.QueuedDeletes[int(ctx.guild_id)], 1):
-            await ctx.channel.send("-" * 4 + f" 第 {idx} 筆" + "-" * 4)
-            await send_confirmation_by_id(_id)
+        try:
+            for idx, _id in enumerate(self.QueuedDeletes[int(ctx.guild_id)], 1):
+                await ctx.channel.send("-" * 4 + f" 第 {idx} 筆" + "-" * 4)
+                await send_confirmation_by_id(_id)
+        except interactions.LibraryException:
+            await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
+            return
 
         await ctx.channel.send(
             f"請確認是否刪除以上 {len(selected_values)} 筆內容?",
