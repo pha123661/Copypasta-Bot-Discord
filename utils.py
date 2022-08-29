@@ -43,14 +43,13 @@ async def GetImg(doc: dict(), description: str = "") -> interactions.File:
     return await GetImgByURL(URL, description)
 
 
-@awaitable
-def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
+async def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
     global UserStatus
     col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]
-    tg_info = col.find_one({"TGUserID": TGUserID})
+    tg_info = await col.find_one({"TGUserID": TGUserID})
     if tg_info is None:
         return False
-    elif col.find_one({"DCUserID": DCUserID, "TGUserID": {"$exists": True}}):
+    elif await col.find_one({"DCUserID": DCUserID, "TGUserID": {"$exists": True}}):
         return False
 
     filter = {"DCUserID": DCUserID}
@@ -67,12 +66,12 @@ def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
         }
 
     try:
-        new_info = col.find_one_and_update(
+        new_info = await col.find_one_and_update(
             filter=filter, update=update, upsert=True, return_document=pymongo.ReturnDocument.AFTER)
         UserStatus[DCUserID].TGUserID = TGUserID
         UserStatus[DCUserID].Contribution = new_info['Contribution']
         UserStatus[DCUserID].Nickname = new_info['Nickname']
-        col.find_one_and_delete({"_id": tg_info['_id']})
+        await col.find_one_and_delete({"_id": tg_info['_id']})
         return True
     except Exception as e:
         logger.error(e)
@@ -83,12 +82,14 @@ async def GetLBInfo(client, num: int) -> str:
     sort = [('Contribution', pymongo.DESCENDING)]
     cursor = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(limit=num, sort=sort)
     LB = ["目前KO榜:"]
-    for idx, doc in enumerate(cursor, 1):
+    idx = 1  # async for can't enumerate
+    async for doc in cursor:
         if 'Nickname' in doc:
             Username = doc['Nickname']
         else:
             Username = await GetMaskedNameByID(client, doc.get('DCUserID'))
         LB.append(f"{idx}. {Username}, 貢獻值:{doc['Contribution']}")
+        idx += 1
     return '\n'.join(LB)
 
 
@@ -96,7 +97,7 @@ async def GetMaskedNameByID(client, FromID: int) -> str:
     if FromID is None:
         return "Telegram 用戶"
 
-    doc = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one(
+    doc = await GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one(
         {"$or": [{"DCUserID": FromID}, {"TGUserID": FromID}]})
 
     if doc is not None:
@@ -113,3 +114,13 @@ async def GetMaskedNameByID(client, FromID: int) -> str:
     Mask = '*' * max(len(Name) // 3, 1)
     UnmaskIdx = (len(Name) - len(Mask)) // 2
     return ''.join([Name[:UnmaskIdx], Mask, Name[UnmaskIdx + len(Mask):]])
+
+
+def argmax(pairs):
+    # given an iterable of pairs return the key corresponding to the greatest value
+    return max(pairs, key=lambda x: x[1])[0]
+
+
+def argmax_index(values):
+    # given an iterable of values return the index of the greatest value
+    return argmax(enumerate(values))

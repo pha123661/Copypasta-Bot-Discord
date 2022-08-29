@@ -21,7 +21,7 @@ class commands_update(interactions.Extension):
         """隨機從資料庫抽取 ”number“ 篇, 預設爲 1 篇"""
         async def send_random(col: pymongo.collection.Collection, CN):
             random_idx = random.randint(0, CN - 1)  # [0, CN)
-            doc = col.find_one(skip=random_idx)
+            doc = await col.find_one(skip=random_idx)
             if doc is not None:
                 to_send = f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"
                 if doc['Type'] == 1:
@@ -42,7 +42,7 @@ class commands_update(interactions.Extension):
         else:
             col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
 
-        CN = col.estimated_document_count()
+        CN = await col.estimated_document_count()
         if CN == 0:
             await ctx.send("資料庫沒東西是在抽屁")
             return
@@ -67,7 +67,7 @@ class commands_update(interactions.Extension):
         Maximum_Rst = 10
         Rst_Count = 0
         heap = list()  # max heap
-        for doc in cursor:
+        async for doc in cursor:
             if doc['Type'] == 1:
                 priority = await TestHit(query, doc['Keyword'], doc['Content'])
             else:
@@ -103,7 +103,7 @@ class commands_update(interactions.Extension):
 
         await ctx.send(f"「{query}」的搜尋結果共 {Rst_Count} 筆, 請查看與 bot 的私訊")
         await ctx.author.send(f"「{query}」的搜尋結果共 {Rst_Count} 筆")
-        cursor.close()
+        await cursor.close()
         logger.info(f"search query: “{query}” with {Rst_Count} results")
 
     @interactions.extension_command(dm_permission=False)
@@ -118,7 +118,8 @@ class commands_update(interactions.Extension):
         sort = [("CreateTime", pymongo.DESCENDING)]
         filter = {"From": {"$ne": int(ctx.author.id)}}
         Curser = col.find(filter, limit=number, sort=sort)
-        for idx, doc in enumerate(Curser):
+        idx = 0
+        async for doc in Curser:
             if idx == 0:
                 await ctx.get_channel()
                 SENDER = ctx
@@ -138,6 +139,9 @@ class commands_update(interactions.Extension):
             else:
                 to_send.append("內容:「不支援的檔案格式 (可能來自telegram)」")
                 await SENDER.send("\n".join(to_send))
+
+            idx += 1
+
         logger.info(f"get recent {number}")
 
 

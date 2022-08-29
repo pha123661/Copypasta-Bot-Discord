@@ -1,9 +1,10 @@
 # coding: utf-8
 import pymongo
+import motor.motor_asyncio
+import asyncio
 from datetime import datetime
 from collections import defaultdict
 from typing import *
-from awaits.awaitable import awaitable
 
 
 from config import CONFIG
@@ -63,32 +64,33 @@ class PriorityEntry(object):
         return self.priority > other.priority  # max heap
 
 
-def InitDB() -> Tuple[pymongo.database.Database, pymongo.database.Database]:
-    client = pymongo.MongoClient(CONFIG['API']['MONGO']['URI'])
+async def InitDB():
+    client = motor.motor_asyncio.AsyncIOMotorClient(
+        CONFIG['API']['MONGO']['URI'])
     DB = client[CONFIG['DB']['DB_NAME']]
     GLOBAL_DB = client[CONFIG['DB']['GLOBAL_DB_NAME']]
 
     # create default collections
     for ColName in (CONFIG['DB']['GLOBAL_COL'], CONFIG['DB']['CHAT_STATUS'], CONFIG['DB']['USER_STATUS']):
-        if ColName in GLOBAL_DB.list_collection_names():
+        if ColName in await GLOBAL_DB.list_collection_names():
             continue
-        GLOBAL_DB.create_collection(ColName)
+        await GLOBAL_DB.create_collection(ColName)
 
-    GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].create_indexes([
+    await GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].create_indexes([
         pymongo.IndexModel("GuildID"),
         pymongo.IndexModel("ChatID"),
         pymongo.IndexModel([("GuildID", pymongo.ASCENDING),
                             ('ChatID', pymongo.ASCENDING)],
                            unique=True),
     ])
-    GLOBAL_DB[CONFIG['DB']['USER_STATUS']].create_indexes([
+    await GLOBAL_DB[CONFIG['DB']['USER_STATUS']].create_indexes([
         pymongo.IndexModel("DCUserID"),
         pymongo.IndexModel("TGUserID"),
         pymongo.IndexModel([("DCUserID", pymongo.ASCENDING),
                             ('TGUserID', pymongo.ASCENDING)],
                            unique=True),
     ])
-    GLOBAL_DB[CONFIG['DB']['GLOBAL_COL']].create_indexes([
+    await GLOBAL_DB[CONFIG['DB']['GLOBAL_COL']].create_indexes([
         pymongo.IndexModel("Type"),
         pymongo.IndexModel([("Type", pymongo.ASCENDING),
                             ("Keyword", pymongo.ASCENDING)]),
@@ -101,9 +103,9 @@ def InitDB() -> Tuple[pymongo.database.Database, pymongo.database.Database]:
     return GLOBAL_DB, DB, GLOBAL_DB[CONFIG['DB']['GLOBAL_COL']]
 
 
-def BuildCache():
+async def BuildCache():
     ChatStatus = keydefaultdict(ChatStatusEntity)
-    for doc in GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
+    async for doc in GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
         if 'GuildID' not in doc:
             continue
         ChatStatus[doc['GuildID']] = ChatStatusEntity(
@@ -114,7 +116,7 @@ def BuildCache():
         )
 
     UserStatus = keydefaultdict(UserStatusEntity)
-    for doc in GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
+    async for doc in GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find(cursor_type=pymongo.CursorType.EXHAUST):
         if 'DCUserID' not in doc:
             continue
         UserStatus[doc['DCUserID']] = UserStatusEntity(
@@ -128,63 +130,57 @@ def BuildCache():
     return ChatStatus, UserStatus
 
 
-@awaitable
-def InsertHTB(Collection: pymongo.database.Collection, HTB: dict) -> pymongo.results.InsertOneResult:
+async def InsertHTB(Collection: motor.motor_asyncio.AsyncIOMotorCollection, HTB: dict) -> pymongo.results.InsertOneResult:
     """Inserts HTB and returns its result"""
     HTB['CreateTime'] = datetime.now()
     HTB['Platform'] = 'Discord'
-    return Collection.insert_one(HTB)
+    return await Collection.insert_one(HTB)
 
 
-@awaitable
-def UpdateChatStatus(CSE: ChatStatusEntity):
+async def UpdateChatStatus(CSE: ChatStatusEntity):
     """updates the chatstatus in db"""
     global ChatStatus
     col = GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']]
     filter = {"GuildID": CSE.GuildID}
     update = {"$set": {"Global": CSE.Global}}
-    col.find_one_and_update(filter=filter, update=update, upsert=True)
+    await col.find_one_and_update(filter=filter, update=update, upsert=True)
     ChatStatus[CSE.GuildID] = CSE
 
 
-@awaitable
-def AddContribution(DCUserID: int, Delta: int) -> int:
+async def AddContribution(DCUserID: int, Delta: int) -> int:
     """increaments user contribution and returns current contribution"""
     global UserStatus
     col = GLOBAL_DB[CONFIG['DB']['USER_STATUS']]
     filter = {"DCUserID": DCUserID}
     update = {"$inc": {"Contribution": Delta}}
 
-    doc = col.find_one_and_update(
-        filter=filter, update=update, upsert=True, return_document=pymongo.ReturnDocument.AFTER)
+    doc = await col.find_one_and_update(filter=filter, update=update, upsert=True,
+                                        return_document=pymongo.ReturnDocument.AFTER)
     UserStatus[DCUserID].Contribution = doc['Contribution']
     return UserStatus[DCUserID].Contribution
 
 
-@awaitable
-def DisableDCChan(GuildID: int, ChanID: int) -> bool:
+async def DisableDCChan(GuildID: int, ChanID: int) -> bool:
     filter = {"GuildID": GuildID}
     update = {"$addToSet": {"DcDisabledChan": ChanID}}
     col = GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']]
-    col.find_one_and_update(filter, update)
+    await col.find_one_and_update(filter, update)
     return True
 
 
-@awaitable
-def EnableDCChan(GuildID: int, ChanID: int) -> bool:
+async def EnableDCChan(GuildID: int, ChanID: int) -> bool:
     filter = {"GuildID": GuildID}
     update = {"$pull": {"DcDisabledChan": ChanID}}
     col = GLOBAL_DB[CONFIG['DB']['CHAT_STATUS']]
-    col.find_one_and_update(filter, update)
+    await col.find_one_and_update(filter, update)
     return True
 
 
-GLOBAL_DB: pymongo.database.Database
-DB: pymongo.database.Database
-GLOBAL_COL: pymongo.database.Collection
-GLOBAL_DB, DB, GLOBAL_COL = InitDB()
 # ChatStatus[int(ctx.guild_id)] = ChatStatusEntity()
 # UserStatus[int(ctx.author.id)] = UserStatusEntity()
 ChatStatus: List[ChatStatusEntity]
 UserStatus: List[UserStatusEntity]
-ChatStatus, UserStatus = BuildCache()
+
+loop = asyncio.get_event_loop()
+GLOBAL_DB, DB, GLOBAL_COL = loop.run_until_complete(InitDB())
+ChatStatus, UserStatus = loop.run_until_complete(BuildCache())

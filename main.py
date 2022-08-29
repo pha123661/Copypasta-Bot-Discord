@@ -1,4 +1,5 @@
 # coding: utf-8
+from multiprocessing import Pool
 import interactions
 import heapq
 import base64
@@ -13,17 +14,10 @@ from config import CONFIG, logger
 from vlp import TestHit, ImageCaptioning
 
 
-if len(CONFIG['SETTING']['GUILD_IDs']) > 0:
-    bot = interactions.Client(
-        token=CONFIG['API']['DC']['TOKEN'],
-        default_scope=CONFIG['SETTING']['GUILD_IDs'],
-        intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
-    )
-else:
-    bot = interactions.Client(
-        token=CONFIG['API']['DC']['TOKEN'],
-        intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
-    )
+bot = bot = interactions.Client(
+    token=CONFIG['API']['DC']['TOKEN'],
+    intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
+)
 
 
 def main():
@@ -95,7 +89,7 @@ async def image_add_message(msg: interactions.Message):
     # check existing files
     Filter = {"$and": [{"Type": Type}, {
         "Keyword": keyword}, {"FileUniqueID": FileUniqueID}]}
-    if Col.find_one(Filter) is not None:
+    if await Col.find_one(Filter) is not None:
         # find duplicates
         await channel.send("傳過了啦 腦霧?")
         return
@@ -150,29 +144,23 @@ async def text_normal_message(msg: interactions.Message):
 
     filter = {"Type": {"$ne": 0}}
     sort = [('Type', pymongo.ASCENDING)]
-    cursor = col.find(filter=filter, sort=sort)
+    docs = await col.find(filter=filter, sort=sort).to_list(length=None)
+    priorities = await asyncio.gather(
+        *[TestHit(Query, doc['Keyword'], doc['Summarization']) for doc in docs])
 
-    Candidates: List[PriorityEntry] = list()  # max heap
-    for doc in cursor:
-        priority = await TestHit(Query, doc['Keyword'], doc['Summarization'])
-        priority /= len(Query)
-        if priority >= CONFIG['SETTING']['BOT_TALK_THRESHOLD']:
-            heapq.heappush(Candidates, PriorityEntry(priority, doc))
-    if len(Candidates) <= 0:
-        cursor.close()
+    if max(priorities) < CONFIG['SETTING']['BOT_TALK_THRESHOLD']:
         return
 
-    tmp = heapq.heappop(Candidates)
-    doc = tmp.data
+    doc = docs[argmax_index(priorities)]
+
     if doc['Type'] == 1:
         await channel.send(doc['Content'])
     elif doc['Type'] == 2:
         img = await GetImg(doc, doc['Summarization'])
         await channel.send(files=img)
-    cursor.close()
     logger.info(
-        f"normal msg w/ {len(Candidates)} candidates and maximum priority of {tmp.priority}")
+        f"normal msg w/ priority of {max(priorities)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

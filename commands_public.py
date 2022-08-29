@@ -36,7 +36,7 @@ class commands_public(interactions.Extension):
             return
         await ctx.defer()
         DCUserID = int(ctx.author.id)
-        GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one_and_update(
+        await GLOBAL_DB[CONFIG['DB']['USER_STATUS']].find_one_and_update(
             filter={"DCUserID": DCUserID}, update={"$set": {"Nickname": nickname}}, upsert=True)
         UserStatus[DCUserID].Nickname = nickname
         await ctx.send(f"設定暱稱「{nickname}」成功")
@@ -85,12 +85,7 @@ class commands_public(interactions.Extension):
         DCUserID = int(ctx.author.id)
         GuildID = int(ctx.guild_id)
         ChanID = int(ctx.channel_id)
-
-        Leaderboard = await GetLBInfo(self.client, 3)
-        if UserStatus[DCUserID].Nickname != None:
-            Nickname = UserStatus[DCUserID].Nickname
-        else:
-            Nickname = "尚未設定暱稱"
+        embed_fields = list()
 
         # get status
         if ChatStatus[int(ctx.guild_id)].Global:
@@ -98,10 +93,46 @@ class commands_public(interactions.Extension):
         else:
             guild_mode = "私人模式"
 
+        embed_fields.append(interactions.EmbedField(
+            name="伺服器狀態",
+            value=guild_mode,
+            inline=True
+        ))
+
         if ChanID in ChatStatus[GuildID].DcDisabledChan:
             chan_mode = "閉嘴狀態"
         else:
             chan_mode = "bot會插嘴"
+
+        embed_fields.append(interactions.EmbedField(
+            name="頻道狀態",
+            value=chan_mode,
+            inline=True,
+        ))
+
+        Leaderboard = await GetLBInfo(self.client, 3)
+        if UserStatus[DCUserID].Nickname != None:
+            Nickname = UserStatus[DCUserID].Nickname
+            embed_fields.append(interactions.EmbedField(
+                name='暱稱',
+                value=Nickname,
+                inline=True
+            ))
+        else:
+            pass
+
+        if DCUserID in UserStatus:
+            embed_fields.append(interactions.EmbedField(
+                name='貢獻值',
+                value=UserStatus[DCUserID].Contribution,
+                inline=True
+            ))
+        else:
+            embed_fields.append(interactions.EmbedField(
+                name='貢獻值',
+                value=0,
+                inline=True
+            ))
 
         # get current ranking
         Curser = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].aggregate([
@@ -115,13 +146,19 @@ class commands_public(interactions.Extension):
             {"$limit": 1}
         ])
 
-        ranking = next(iter(Curser))['globRnk']
-        if ranking <= 3:
-            ranking = f"第 {ranking} 名, WOW 沒人生 🎉大家一起恭喜你🎉"
-        elif ranking <= 10:
-            ranking = f"第 {ranking} 名, 厲害了 前十名誒"
-        else:
-            ranking = f"第 {ranking} 名"
+        async for ranking in Curser:
+            ranking = ranking['globRnk']  # should break immediately
+            if ranking <= 3:
+                ranking = f"第 {ranking} 名, WOW 沒人生 🎉大家一起恭喜你🎉"
+            elif ranking <= 10:
+                ranking = f"第 {ranking} 名, 厲害了 前十名誒"
+            else:
+                ranking = f"第 {ranking} 名"
+            embed_fields.append(interactions.EmbedField(
+                name='貢獻值排行',
+                value=ranking,
+                inline=True
+            ))
 
         await ctx.send("", embeds=interactions.Embed(
             title="狀態查詢",
@@ -134,33 +171,7 @@ class commands_public(interactions.Extension):
                 text="一大坨迷因感謝您的使用",
                 icon_url="https://imgur.com/LdjownE.jpg",
             ),
-            fields=[
-                interactions.EmbedField(
-                    name="伺服器狀態",
-                    value=guild_mode,
-                    inline=True
-                ),
-                interactions.EmbedField(
-                    name="頻道狀態",
-                    value=chan_mode,
-                    inline=True,
-                ),
-                interactions.EmbedField(
-                    name='暱稱',
-                    value=Nickname,
-                    inline=True
-                ),
-                interactions.Embed(
-                    name='貢獻值',
-                    value=UserStatus[DCUserID].Contribution,
-                    inline=True
-                ),
-                interactions.Embed(
-                    name='貢獻值排行',
-                    value=ranking,
-                    inline=True
-                ),
-            ]
+            fields=embed_fields,
         ))
 
     @ interactions.extension_command(dm_permission=False)
@@ -176,7 +187,7 @@ class commands_public(interactions.Extension):
         cursor = source_col.find(
             filter=filter, cursor_type=pymongo.CursorType.EXHAUST)
         docs2insert = list()
-        for doc in cursor:
+        async for doc in cursor:
             del doc['_id']
             doc['CreateTime'] = datetime.now(timezone.utc)
             docs2insert.append(doc)
@@ -185,7 +196,7 @@ class commands_public(interactions.Extension):
             return
 
         try:
-            MRst = target_col.insert_many(docs2insert, ordered=False)
+            MRst = await target_col.insert_many(docs2insert, ordered=False)
             con = len(MRst.inserted_ids)
         except pymongo.errors.BulkWriteError as bwe:
             con = bwe.details['nInserted']

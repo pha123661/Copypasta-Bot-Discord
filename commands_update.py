@@ -74,7 +74,7 @@ class commands_update(interactions.Extension):
         # check existing files
         Filter = {"$and": [{"Type": Type}, {
             "Keyword": keyword}, {"FileUniqueID": FileUniqueID}]}
-        if Col.find_one(Filter) is not None:
+        if await Col.find_one(Filter) is not None:
             # find duplicates
             await ctx.send("傳過了啦 腦霧?", ephemeral=True)
             return
@@ -148,7 +148,7 @@ class commands_update(interactions.Extension):
         else:
             col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
             filter = {"Keyword": keyword}
-        num = col.count_documents(filter=filter)
+        num = await col.count_documents(filter=filter)
         if num <= 0:
             await ctx.send(f'關鍵字「{keyword}」沒有東西可以刪除')
             return
@@ -156,7 +156,7 @@ class commands_update(interactions.Extension):
         cursor = col.find(filter=filter).sort(
             "Type", pymongo.ASCENDING).limit(5)
         SOptions = list()
-        for doc in cursor:
+        async for doc in cursor:
             SOption = interactions.SelectOption(
                 label=f"{CONFIG['SETTING']['NAME'][doc['Type']]}：{doc['Keyword']}",
                 value=f"{doc['_id']}",
@@ -183,7 +183,7 @@ class commands_update(interactions.Extension):
             else:
                 col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
                 filter = {"_id": ObjectId(_id)}
-            doc = col.find_one(filter)
+            doc = await col.find_one(filter)
             if doc is None:
                 await ctx.channel.send(f"找不到 {_id}, 請確認刪除時沒有切換模式")
             else:
@@ -264,7 +264,7 @@ class commands_update(interactions.Extension):
             else:
                 col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
                 filter = {"_id": ObjectId(_id)}
-            doc = col.find_one_and_delete(filter)
+            doc = await col.find_one_and_delete(filter)
             if doc is not None:
                 return True
             else:
