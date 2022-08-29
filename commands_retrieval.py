@@ -81,10 +81,13 @@ class commands_update(interactions.Extension):
             priority, doc = tmp.priority, tmp.data
 
             Rst_Count += 1
-            to_send = [f"關鍵字:「{doc['Keyword']}」",
-                       f"摘要:「{doc['Summarization']}」"]
+            to_send = [
+                '----------',
+                f"關鍵字:「{doc['Keyword']}」",
+                f"摘要:「{doc['Summarization']}」",
+            ]
             if doc['Type'] == 1:
-                to_send .append(f":{doc['Content']}")
+                to_send .append(f"內容:「{doc['Content']}」")
                 await ctx.author.send("\n".join(to_send))
             elif doc['Type'] == 2:
                 img = await GetImg(doc, doc['Summarization'])
