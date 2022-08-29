@@ -112,10 +112,10 @@ class commands_update(interactions.Extension):
                 to_send.append('未生成摘要')
 
             if Type == CONFIG['SETTING']['TYPE']['TXT']:
-                to_send.append(f'內容:「{Content}」')
                 if ChatStatus[GuildID].Global:
                     to_send.append(
                         f'目前貢獻值: {UserStatus[FromID].Contribution}')
+                to_send.append(f'內容:「{Content}」')
                 await ctx.send("\n".join(to_send))
 
             else:
