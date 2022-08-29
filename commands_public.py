@@ -137,7 +137,7 @@ class commands_public(interactions.Extension):
         # get current ranking
         Curser = GLOBAL_DB[CONFIG['DB']['USER_STATUS']].aggregate([
             {"$setWindowFields": {
-                "sortBy": {"Contributions": -1},
+                "sortBy": {"Contribution": -1},
                 "output": {"globRnk": {"$rank": {}}}
             }},
             {"$match": {
@@ -146,8 +146,8 @@ class commands_public(interactions.Extension):
             {"$limit": 1}
         ])
 
-        async for ranking in Curser:
-            ranking = ranking['globRnk']  # should break immediately
+        async for doc in Curser:
+            ranking = doc['globRnk']  # should break immediately
             if ranking <= 3:
                 ranking = f"第 {ranking} 名, WOW 沒人生 🎉大家一起恭喜你🎉"
             elif ranking <= 10:
