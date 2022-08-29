@@ -42,6 +42,10 @@ async def on_message_create(msg: interactions.Message):
     """提到類似關鍵字時 bot 會插嘴"""
     if msg.author.id == bot.me.id or msg.content == '':
         return
+    elif msg.guild_id is None:
+        channel = await msg.get_channel()
+        await channel.send("目前僅限在伺服器使用")
+        return
     elif len(msg.attachments) == 0:
         if msg.channel_id in ChatStatus[int(msg.guild_id)].DcDisabledChan:
             return
@@ -49,6 +53,7 @@ async def on_message_create(msg: interactions.Message):
         return
     elif len(msg.attachments) == 1:
         await image_add_message(msg)
+        return
 
 
 @bot.event()
@@ -145,6 +150,8 @@ async def text_normal_message(msg: interactions.Message):
     filter = {"Type": {"$ne": 0}}
     sort = [('Type', pymongo.ASCENDING)]
     docs = await col.find(filter=filter, sort=sort).to_list(length=None)
+    if len(docs) <= 0:
+        return
     priorities = await asyncio.gather(
         *[TestHit(Query, doc['Keyword'], doc['Summarization']) for doc in docs])
 
