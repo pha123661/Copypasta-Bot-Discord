@@ -174,7 +174,7 @@ class commands_public(interactions.Extension):
             fields=embed_fields,
         ))
 
-    @ interactions.extension_command(dm_permission=False)
+    @interactions.extension_command(dm_permission=False)
     async def dump(self, ctx: interactions.CommandContext):
         """將目前私人資料庫內由**自己**新增的內容複製到公共資料庫"""
         await ctx.defer()
