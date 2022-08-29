@@ -64,9 +64,14 @@ class commands_update(interactions.Extension):
             col = GLOBAL_COL
         else:
             col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
+        col_doc_count = await col.estimated_document_count()
+        if col_doc_count <= 10:
+            ctx.send(
+                f"警告: 當前資料庫只有 {col_doc_count} 筆資料, 如果想在公共資料庫查詢的話請使用 /toggle")
+            logger.info("search in col with #doc <= 10")
+
         cursor = col.find(filter={"Type": {"$ne": 0}}, cursor_type=pymongo.CursorType.EXHAUST).sort(
             "Type", pymongo.ASCENDING)
-
         await ctx.defer()
         Maximum_Rst = 10
         Rst_Count = 0
