@@ -40,7 +40,7 @@ async def on_start():
 @bot.event()
 async def on_message_create(msg: interactions.Message):
     """提到類似關鍵字時 bot 會插嘴"""
-    if msg.author.id == bot.me.id or msg.content == '' or '@' in msg.content:
+    if msg.author.bot or msg.author.id == bot.me.id or msg.content == '' or '@' in msg.content:
         return
     elif msg.guild_id is None:
         channel = await msg.get_channel()
@@ -66,8 +66,6 @@ async def image_add_message(msg: interactions.Message):
     channel = await msg.get_channel()
     keyword = msg.content
     media = msg.attachments[0]
-    if media is None:
-        return
     # image
     if media.content_type.startswith("image") and media.content_type != "image/gif":
         Type = CONFIG['SETTING']['TYPE']['IMG']
