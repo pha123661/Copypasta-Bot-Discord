@@ -6,7 +6,7 @@ from database import *
 import telegram
 import os
 import dotenv
-from awaits.awaitable import awaitable
+import aiohttp
 
 
 from config import logger
@@ -15,18 +15,19 @@ dotenv.load_dotenv()
 bot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 
-@awaitable
-def GetImgByURL(URL: str, description: str = None) -> interactions.File:
-    resp = requests.get(URL)
-    try:
-        resp.raise_for_status()
-    except Exception as e:
-        logger.error(e)
-    img = interactions.File(
-        filename=f"img.jpg",
-        fp=io.BytesIO(resp.content),
-        description=description
-    )
+async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(URL) as resp:
+            try:
+                resp.raise_for_status()
+            except Exception as e:
+                logger.error(e)
+                return None
+            img = interactions.File(
+                filename=f"img.jpg",
+                fp=io.BytesIO(await resp.content.read()),
+                description=description
+            )
     return img
 
 
