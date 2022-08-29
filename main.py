@@ -159,7 +159,7 @@ async def text_normal_message(msg: interactions.Message):
         img = await GetImg(doc, doc['Summarization'])
         await channel.send(files=img)
     logger.info(
-        f"normal msg w/ priority of {max(priorities)}")
+        f"normal msg w/ priority of {max(priorities)/len(Query)}")
 
 
 if __name__ == "__main__":
