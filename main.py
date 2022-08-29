@@ -14,7 +14,7 @@ from config import CONFIG, logger
 from vlp import TestHit, ImageCaptioning
 
 
-bot = bot = interactions.Client(
+bot = interactions.Client(
     token=CONFIG['API']['DC']['TOKEN'],
     intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
 )
@@ -60,6 +60,14 @@ async def on_message_create(msg: interactions.Message):
 async def on_component(ctx: interactions.CommandContext):
     if ctx.data.custom_id.startswith("EXP "):
         await tutorial_handler(ctx, ctx.data.custom_id[4:])
+
+
+@bot.event()
+async def on_guild_create(guild: interactions.Guild):
+    chan = await interactions.get(bot, interactions.Channel,
+                                  parent_id=guild.id, object_id=guild.system_channel_id)
+    await chan.send("歡迎使用, 請使用 /example 查看教學, 或使用 /toggle 進入公共模式!")
+    logger.info(f"Joined new guild: {guild}, guild_id: {guild.id}")
 
 
 async def image_add_message(msg: interactions.Message):

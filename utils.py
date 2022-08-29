@@ -11,7 +11,7 @@ import aiohttp
 from config import logger
 
 dotenv.load_dotenv()
-bot = telegram.Bot(os.getenv("APITGTOKEN"))
+tgbot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 
 async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
@@ -33,7 +33,7 @@ async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
 async def GetImg(doc: dict(), description: str = "") -> interactions.File:
     if doc.get("Platform") == "Telegram" or doc.get("Platform") is None:
         try:
-            URL = bot.getFile(doc['Content']).file_path
+            URL = tgbot.getFile(doc['Content']).file_path
         except Exception as e:
             logger.error(e)
             if 'URL' in doc:
