@@ -73,6 +73,9 @@ async def on_guild_create(guild: interactions.Guild):
         await chan.send("歡迎使用, 請使用 /example 查看教學, 或使用 /toggle 進入公共模式!")
         logger.info(
             f"Joined new guild: {guild}, ppl#: {guild.member_count}, guild_id: {guild.id}")
+    else:
+        print(
+            f"In guild: {guild.name}, ppl#: {guild.member_count}, guild_id: {guild.id}")
 
 
 async def image_add_message(msg: interactions.Message):
