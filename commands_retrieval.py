@@ -25,7 +25,7 @@ class commands_update(interactions.Extension):
             if doc is not None:
                 to_send = ["----------", f"幫你從{CN}篇中精心選擇了「{doc['Keyword']}」"]
                 if doc['Type'] == 1:
-                    to_send.append(f":{doc['Content']}")
+                    to_send.append(f"內容:「{doc['Content']}」")
                     await ctx.channel.send("\n".join(to_send))
                 elif doc['Type'] == 2:
                     img = await GetImg(doc, doc['Summarization'])
