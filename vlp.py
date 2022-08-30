@@ -1,7 +1,7 @@
 # coding: utf-8
 import string
 import re
-import functools
+import time
 import googletrans
 import hfapi
 import jieba
@@ -73,8 +73,11 @@ def TextSummarization(content: str) -> str:
             HFclient = hfapi.Client(choice(CONFIG['API']['HF']['TOKENs']))
 
         break
-
-    return rst[0]["summary_text"]
+    try:
+        return rst[0]["summary_text"]
+    except KeyError:
+        time.sleep(3)  # sec
+        return TextSummarization(content)
 
 
 @awaitable()
