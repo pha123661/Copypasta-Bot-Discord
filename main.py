@@ -181,8 +181,9 @@ async def text_normal_message(msg: interactions.Message):
     elif doc['Type'] == 2:
         img = await GetImg(doc, doc['Summarization'])
         await channel.send(files=img)
+    guild = await msg.get_guild()
     logger.info(
-        f"normal msg w/ priority of {max(priorities)/len(Query)}")
+        f"{guild.name}, #{guild.member_count} normal msg w/ priority of {max(priorities)/len(Query)}")
 
 
 if __name__ == "__main__":
