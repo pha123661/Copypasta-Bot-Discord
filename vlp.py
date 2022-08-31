@@ -80,20 +80,25 @@ def TextSummarization(content: str) -> str:
         return TextSummarization(content)
 
 
+IC_provider = [
+    'https://hf.space/embed/awacke1/NLPImageUnderstanding/+/api/predict',
+    "https://hf.space/embed/OFA-Sys/OFA-Image_Caption/+/api/predict/",
+    "https://hf.space/embed/jonasmouyal/Image_Captioning/api/predict",
+]
+
+
 @awaitable()
-def ImageCaptioning(encoded_image: str, space_url: str = 'https://hf.space/embed/OFA-Sys/OFA-Image_Caption/+/api/predict/') -> str:
-    try:
-        r = requests.post(
-            url=space_url,
-            json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
-        )
-        cap = r.json()['data'][0]
-    except:
-        logger.info(f"image captioning failed! response: {r.json()}")
-        r = requests.post(
-            url=space_url,
-            json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
-        )
-        cap = r.json()['data'][0]
+def ImageCaptioning(encoded_image: str) -> str:
+    for space_url in IC_provider:
+        try:
+            r = requests.post(
+                url=space_url,
+                json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
+            )
+            cap = r.json()['data'][0]
+            break
+        except:
+            logger.info(f"image captioning failed! response: {r.json()}")
+            cap = "oh no, the server's down"
     zhTW = Translator.translate(cap, dest="zh-TW", src='en').text
     return zhTW
