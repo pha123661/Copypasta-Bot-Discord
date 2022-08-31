@@ -99,6 +99,6 @@ def ImageCaptioning(encoded_image: str) -> str:
             break
         except:
             logger.info(f"image captioning failed! response: {r.json()}")
-            cap = "oh no, the server's down"
+            cap = ""
     zhTW = Translator.translate(cap, dest="zh-TW", src='en').text
     return zhTW
