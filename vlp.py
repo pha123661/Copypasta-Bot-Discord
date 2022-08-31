@@ -81,8 +81,8 @@ def TextSummarization(content: str) -> str:
 
 
 IC_provider = [
-    'https://hf.space/embed/awacke1/NLPImageUnderstanding/+/api/predict',
     "https://hf.space/embed/OFA-Sys/OFA-Image_Caption/+/api/predict/",
+    "https://hf.space/embed/awacke1/NLPImageUnderstanding/+/api/predict",
     "https://hf.space/embed/jonasmouyal/Image_Captioning/api/predict",
 ]
 

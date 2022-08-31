@@ -33,7 +33,7 @@ def main():
 async def on_start():
     print(f"*** Sucessfully login as {bot.me.name} ***")
     await bot.change_presence(interactions.ClientPresence(
-        activities=[interactions.PresenceActivity(name="圖片的server炸開了", type=interactions.PresenceActivityType.LISTENING)]))
+        activities=[interactions.PresenceActivity(name="你媽在叫", type=interactions.PresenceActivityType.LISTENING)]))
 
 
 @bot.event()
