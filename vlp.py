@@ -11,7 +11,7 @@ from awaits.awaitable import awaitable
 
 
 from random import choice
-from config import CONFIG
+from config import CONFIG, logger
 
 # get stop_words for jieba
 with open('./nlp_dict/chinese_stop_words.txt', encoding="utf-8") as f:
@@ -81,11 +81,15 @@ def TextSummarization(content: str) -> str:
 
 
 @awaitable()
-def ImageCaptioning(encoded_image: str) -> str:
-    r = requests.post(
-        url='https://hf.space/embed/OFA-Sys/OFA-Image_Caption/+/api/predict/',
-        json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
-    )
-    zhTW = Translator.translate(
-        r.json()['data'][0], dest="zh-TW", src='en').text
+def ImageCaptioning(encoded_image: str, space_url: str = 'https://hf.space/embed/OFA-Sys/OFA-Image_Caption/+/api/predict/') -> str:
+    try:
+        r = requests.post(
+            url=space_url,
+            json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
+        )
+        cap = r.json()['data'][0]
+    except:
+        logger.info(f"image captioning failed! response: {r.json()}")
+        return ImageCaptioning(encoded_image, "https://hf.space/embed/jonasmouyal/Image_Captioning/+/api/predict/")
+    zhTW = Translator.translate(cap, dest="zh-TW", src='en').text
     return zhTW
