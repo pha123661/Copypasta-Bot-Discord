@@ -6,7 +6,7 @@ import googletrans
 import hfapi
 import jieba
 import jieba.analyse
-import requests
+import aiohttp
 from awaits.awaitable import awaitable
 
 
@@ -87,18 +87,17 @@ IC_provider = [
 ]
 
 
-@awaitable()
-def ImageCaptioning(encoded_image: str) -> str:
+async def ImageCaptioning(encoded_image: str) -> str:
     for space_url in IC_provider:
         try:
-            r = requests.post(
-                url=space_url,
-                json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
-            )
-            cap = r.json()['data'][0]
-            break
-        except:
-            logger.info(f"image captioning failed! response: {r.json()}")
+            async with aiohttp.ClientSession() as session:
+                async with session.post(space_url, json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}) as resp:
+                    j = await resp.json()
+                    cap = j['data'][0]
+                    break
+        except Exception as e:
+            logger.info(
+                f"image captioning failed, err:{e}, response: {j}, url: {space_url}")
             cap = ""
     if cap == "":
         return ""
