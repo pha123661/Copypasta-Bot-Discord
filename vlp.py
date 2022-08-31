@@ -90,6 +90,10 @@ def ImageCaptioning(encoded_image: str, space_url: str = 'https://hf.space/embed
         cap = r.json()['data'][0]
     except:
         logger.info(f"image captioning failed! response: {r.json()}")
-        return ImageCaptioning(encoded_image, "https://hf.space/embed/jonasmouyal/Image_Captioning/+/api/predict/")
+        r = requests.post(
+            url=space_url,
+            json={"data": [f"data:image/jpeg;base64,{encoded_image}"]}
+        )
+        cap = r.json()['data'][0]
     zhTW = Translator.translate(cap, dest="zh-TW", src='en').text
     return zhTW
