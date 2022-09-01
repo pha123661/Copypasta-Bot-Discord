@@ -79,6 +79,7 @@ def TextSummarization(content: str) -> str:
             return rst[0]["summary_text"]
 
         except KeyError:
+            log.info(f"TesSum ky error, rst: {rst}")
             time.sleep(3)  # sec
 
 
