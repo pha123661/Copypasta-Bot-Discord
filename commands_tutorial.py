@@ -1,8 +1,7 @@
 import os
 import interactions
-from config import CONFIG, logger
+from config import CONFIG
 from interactions.ext.persistence import PersistentCustomID, PersistenceExtension, extension_persistent_component
-from typing import List
 
 
 class commands_tutorial(PersistenceExtension):
