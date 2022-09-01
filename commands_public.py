@@ -166,7 +166,6 @@ class commands_public(interactions.Extension):
             thumbnail=interactions.EmbedImageStruct(
                 url="https://imgur.com/lCHwufq.jpg"),
             color=0x406C96,
-            timestamp=datetime.now(),
             footer=interactions.EmbedFooter(
                 text="一大坨迷因感謝您的使用",
                 icon_url="https://imgur.com/LdjownE.jpg",
