@@ -173,7 +173,7 @@ class commands_update(interactions.Extension):
 
     @interactions.extension_component("deletion_confirmation")
     async def confirmation_handler(self, ctx: interactions.CommandContext, selected_values: List[str]):
-        async def send_confirmation_by_id(_id: str) -> bool:
+        async def send_confirmation_by_id(_id: str, head: str = "") -> bool:
             if ChatStatus[int(ctx.guild_id)].Global:
                 col = GLOBAL_COL
                 filter = {"$and": [
@@ -187,7 +187,7 @@ class commands_update(interactions.Extension):
             if doc is None:
                 await ctx.channel.send(f"找不到 {_id}, 請確認刪除時沒有切換模式")
             else:
-                to_send: List[str] = [f"摘要:「{doc['Summarization']}」"]
+                to_send: List[str] = [head, f"摘要:「{doc['Summarization']}」"]
                 if doc['Type'] == 1:
                     if len(doc['Content']) >= 100:
                         content = doc['Content'][:97] + "……"
@@ -219,8 +219,7 @@ class commands_update(interactions.Extension):
         self.QueuedDeletes[int(ctx.guild_id)] = selected_values
         try:
             for idx, _id in enumerate(self.QueuedDeletes[int(ctx.guild_id)], 1):
-                await ctx.channel.send("-" * 4 + f" 第 {idx} 筆" + "-" * 4)
-                await send_confirmation_by_id(_id)
+                await send_confirmation_by_id(_id, f"---- 第 {idx} 筆 ----")
         except interactions.LibraryException:
             await ctx.send("權限不足 可以踢掉重邀 邀請的時候請勾選要求的全部權限")
             return
