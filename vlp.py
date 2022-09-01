@@ -57,27 +57,29 @@ def TestHit(query: str, *keylist) -> int:
 
 @awaitable()
 def TextSummarization(content: str) -> str:
-    global HFclient
-    count = len(CONFIG['API']['HF']['TOKENs'])
-    for _ in range(count):
+    for _ in range(5):
         try:
-            rst = HFclient.summarization(
-                input=content,
-                model=CONFIG['API']['HF']['SUM_MODEL']
-            )
+            global HFclient
+            count = len(CONFIG['API']['HF']['TOKENs'])
+            for _ in range(count):
+                try:
+                    rst = HFclient.summarization(
+                        input=content,
+                        model=CONFIG['API']['HF']['SUM_MODEL']
+                    )
 
-        except Exception as e:
-            CONFIG['API']['HF']['TOKENs'].remove(HFclient.api_token)
-            if len(CONFIG['API']['HF']['TOKENs']) == 0:
-                return str(e)
-            HFclient = hfapi.Client(choice(CONFIG['API']['HF']['TOKENs']))
+                except Exception as e:
+                    CONFIG['API']['HF']['TOKENs'].remove(HFclient.api_token)
+                    if len(CONFIG['API']['HF']['TOKENs']) == 0:
+                        return str(e)
+                    HFclient = hfapi.Client(
+                        choice(CONFIG['API']['HF']['TOKENs']))
 
-        break
-    try:
-        return rst[0]["summary_text"]
-    except KeyError:
-        time.sleep(3)  # sec
-        return TextSummarization(content)
+                break
+            return rst[0]["summary_text"]
+
+        except KeyError:
+            time.sleep(3)  # sec
 
 
 IC_provider = [
