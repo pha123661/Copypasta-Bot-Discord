@@ -247,7 +247,24 @@ class commands_update(interactions.Extension):
             del self.QueuedDeletes[int(ctx.guild_id)]
         await ctx.edit("已取消刪除", components=interactions.ActionRow.new(
             interactions.Button(
-                style=interactions.ButtonStyle.PRIMARY,
+                style=interactions.ButtonStyle.SECONDARY,
+                label="是",
+                custom_id='deletion',
+                disabled=True,
+            ),
+            interactions.Button(
+                style=interactions.ButtonStyle.DANGER,
+                label="否",
+                custom_id='deletion_cancel',
+                disabled=True,
+            )
+        ))
+
+    @interactions.extension_component("deletion")
+    async def deletion_handler(self, ctx: interactions.CommandContext):
+        await ctx.edit(components=interactions.ActionRow.new(
+            interactions.Button(
+                style=interactions.ButtonStyle.SUCCESS,
                 label="是",
                 custom_id='deletion',
                 disabled=True,
@@ -259,32 +276,13 @@ class commands_update(interactions.Extension):
                 disabled=True,
             )
         ))
-
-    @interactions.extension_component("deletion")
-    async def deletion_handler(self, ctx: interactions.CommandContext):
-        async def delete_from_col_by_id(_id: str) -> bool:
-            if ChatStatus[int(ctx.guild_id)].Global:
-                col = GLOBAL_COL
-                filter = {"$and": [
-                    {"_id": ObjectId(_id)},
-                    {"From": int(ctx.author.id)}
-                ]}
-            else:
-                col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
-                filter = {"_id": ObjectId(_id)}
-            doc = await col.find_one_and_delete(filter)
-            if doc is not None:
-                return True
-            else:
-                return False
-
         if int(ctx.guild_id) not in self.QueuedDeletes:
             await ctx.send("別亂按la")
             return
         await ctx.defer()
         scheduled_tasks = []
         for _id in self.QueuedDeletes[int(ctx.guild_id)]:
-            task = asyncio.create_task(delete_from_col_by_id(_id))
+            task = asyncio.create_task(delete_from_col_by_id(ctx, _id))
             scheduled_tasks.append(task)
         rets = await asyncio.gather(*scheduled_tasks)
 
@@ -294,6 +292,23 @@ class commands_update(interactions.Extension):
             await ctx.send(f"刪除成功 {len(rets)} 筆")
         else:
             await ctx.send(f"刪除成功 {len([r for r in rets if r])} 筆, 失敗 {len([f for f in rets if not f])} 筆")
+
+
+async def delete_from_col_by_id(ctx: interactions.CommandContext, _id: str) -> bool:
+    if ChatStatus[int(ctx.guild_id)].Global:
+        col = GLOBAL_COL
+        filter = {"$and": [
+            {"_id": ObjectId(_id)},
+            {"From": int(ctx.author.id)}
+        ]}
+    else:
+        col = DB[config.GetColNameByGuildID(int(ctx.guild_id))]
+        filter = {"_id": ObjectId(_id)}
+    doc = await col.find_one_and_delete(filter)
+    if doc is not None:
+        return True
+    else:
+        return False
 
 
 def setup(client):

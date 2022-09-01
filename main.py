@@ -3,29 +3,31 @@ import interactions
 import base64
 import aiohttp
 from hashlib import sha256
+from interactions.ext.persistence import PersistentCustomID
 
 import config
 from database import *
 from utils import *
 from config import CONFIG, logger
 from vlp import TestHit, ImageCaptioning
+from commands_update import delete_from_col_by_id
 
 
 bot = interactions.Client(
     token=CONFIG['API']['DC']['TOKEN'],
     intents=interactions.Intents.DEFAULT | interactions.Intents.GUILD_MESSAGE_CONTENT
 )
+bot.load('interactions.ext.files')
+bot.load("interactions.ext.persistence",
+         cipher_key=os.getenv("APIDCCIPHER"))
+bot.load("commands_update")
+bot.load("commands_retrieval")
+bot.load("commands_public")
+bot.load("commands_management")
+bot.load("commands_tutorial")
 
 
 def main():
-    bot.load('interactions.ext.files')
-    bot.load("interactions.ext.persistence",
-             cipher_key=os.getenv("APIDCCIPHER"))
-    bot.load("commands_update")
-    bot.load("commands_retrieval")
-    bot.load("commands_public")
-    bot.load("commands_management")
-    bot.load("commands_tutorial")
     bot.start()
 
 
@@ -142,7 +144,17 @@ async def image_add_message(msg: interactions.Message):
 
         if ChatStatus[GuildID].Global:
             to_send.append(f'目前貢獻值: {UserStatus[FromID].Contribution}')
-        await channel.send("\n".join(to_send))
+        await channel.send(
+            "\n".join(to_send),
+            components=interactions.Button(
+                style=interactions.ButtonStyle.SECONDARY,
+                label="阿幹手滑 我沒有要加這張",
+                custom_id=str(PersistentCustomID(
+                    cipher=bot,
+                    tag="accidentally_delete",
+                    package=str(Rst.inserted_id),
+                ))
+            ),)
         logger.info(
             f"add successfully: Keyword: {keyword}, Summarization: {Summarization}")
     else:
@@ -151,6 +163,15 @@ async def image_add_message(msg: interactions.Message):
         logger.error(f"add failed: DB_S_Rst: {Rst}")
 
     await to_be_deleted_msg.delete("運算完成, 刪除提示訊息")
+
+
+@bot.persistent_component("accidentally_delete")
+async def handle_accidentally_image(ctx: interactions.CommandContext, _id: str):
+    try:
+        await delete_from_col_by_id(ctx, _id)
+        await ctx.edit("刪除成功", components=[])
+    except Exception as e:
+        await ctx.edit(f"刪除失敗: {e}")
 
 
 async def text_normal_message(msg: interactions.Message):

@@ -25,27 +25,31 @@ async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
             except Exception as e:
                 logger.error(e)
                 return None
-            bs = await resp.content.read()
-            bs_c = bs[:]
+            bs = io.BytesIO(await resp.content.read())
+            bs.seek(0)
             img = interactions.File(
                 filename=f"{id_generator()}.jpg",
-                fp=io.BytesIO(bs_c),
+                fp=bs,
                 description=description
             )
     return img
 
 
 async def GetImg(doc: dict(), description: str = "") -> interactions.File:
-    if doc.get("Platform") == "Telegram" or doc.get("Platform") is None:
-        try:
-            URL = tgbot.getFile(doc['Content']).file_path
-        except Exception as e:
-            logger.error(e)
-            if 'URL' in doc:
-                return await GetImgByURL(doc['URL'], description)
+    if doc.get("Platform") == "Telegram":
+        ret = await GetImgByURL(doc['URL'], description)
+        if ret is not None:
+            return ret
+        else:
+            try:
+                URL = tgbot.getFile(doc['Content']).file_path
+                return await GetImgByURL(URL, description)
+            except Exception as e:
+                logger.error(e)
+                if 'URL' in doc:
+                    return await GetImgByURL(doc['URL'], description)
     else:
-        URL = doc['URL']
-    return await GetImgByURL(URL, description)
+        return await GetImgByURL(doc['URL'], description)
 
 
 async def LinkTGAccount(DCUserID: int, TGUserID: int) -> bool:
