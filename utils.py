@@ -6,8 +6,8 @@ import telegram
 import os
 import dotenv
 import aiohttp
-
-
+import random
+import string
 from config import logger
 
 dotenv.load_dotenv()
@@ -15,6 +15,9 @@ tgbot = telegram.Bot(os.getenv("APITGTOKEN"))
 
 
 async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
+    def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+        return ''.join(random.choice(chars) for _ in range(size))
+
     async with aiohttp.ClientSession() as session:
         async with session.get(URL) as resp:
             try:
@@ -22,9 +25,11 @@ async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
             except Exception as e:
                 logger.error(e)
                 return None
+            bs = await resp.content.read()
+            bs_c = bs[:]
             img = interactions.File(
-                filename=f"img.jpg",
-                fp=io.BytesIO(await resp.content.read()),
+                filename=f"{id_generator()}.jpg",
+                fp=io.BytesIO(bs_c),
                 description=description
             )
     return img
