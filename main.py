@@ -7,7 +7,6 @@ from hashlib import sha256
 import config
 from database import *
 from utils import *
-from commands_tutorial import tutorial_handler
 from config import CONFIG, logger
 from vlp import TestHit, ImageCaptioning
 
@@ -19,12 +18,14 @@ bot = interactions.Client(
 
 
 def main():
+    bot.load('interactions.ext.files')
+    bot.load("interactions.ext.persistence",
+             cipher_key=os.getenv("APIDCCIPHER"))
     bot.load("commands_update")
     bot.load("commands_retrieval")
     bot.load("commands_public")
     bot.load("commands_management")
     bot.load("commands_tutorial")
-    bot.load('interactions.ext.files')
     bot.start()
 
 
@@ -54,10 +55,10 @@ async def on_message_create(msg: interactions.Message):
         return
 
 
-@bot.event()
-async def on_component(ctx: interactions.CommandContext):
-    if ctx.data.custom_id.startswith("EXP "):
-        await tutorial_handler(ctx, ctx.data.custom_id[4:])
+# @bot.event()
+# async def on_component(ctx: interactions.CommandContext):
+#     if ctx.data.custom_id.startswith("EXP "):
+#         await tutorial_handler(ctx, ctx.data.custom_id[4:])
 
 
 @bot.event()
