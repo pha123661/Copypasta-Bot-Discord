@@ -1,5 +1,4 @@
 # coding: utf-8
-from multiprocessing import Pool
 import interactions
 import base64
 import aiohttp
