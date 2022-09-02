@@ -144,7 +144,7 @@ async def image_add_message(msg: interactions.Message):
 
         if ChatStatus[GuildID].Global:
             to_send.append(f'目前貢獻值: {UserStatus[FromID].Contribution}')
-        await channel.send(
+        to_be_modified_msg = await channel.send(
             "\n".join(to_send),
             components=interactions.Button(
                 style=interactions.ButtonStyle.SECONDARY,
@@ -154,15 +154,19 @@ async def image_add_message(msg: interactions.Message):
                     tag="accidentally_delete",
                     package=str(Rst.inserted_id),
                 ))
-            ),)
+            ))
         logger.info(
             f"add successfully: Keyword: {keyword}, Summarization: {Summarization}")
     else:
         # failed
         await channel.send(f'新增失敗 資料庫發生不明錯誤')
+        to_be_modified_msg = None
         logger.error(f"add failed: DB_S_Rst: {Rst}")
 
     await to_be_deleted_msg.delete("運算完成, 刪除提示訊息")
+    if to_be_modified_msg is not None:
+        await asyncio.sleep(30)
+        await to_be_modified_msg.edit(components=[])
 
 
 @bot.persistent_component("accidentally_delete")
