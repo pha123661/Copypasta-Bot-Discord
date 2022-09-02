@@ -197,6 +197,8 @@ class commands_update(interactions.Extension):
                     await ctx.channel.send("\n".join(to_send))
                 elif doc['Type'] == 2:
                     img = await GetImg(doc, doc['Summarization'])
+                    if img is None:
+                        await ctx.channel.send("傳不出來 DC在搞")
                     await ctx.channel.send("\n".join(to_send), files=img)
                 else:
                     to_send.append("內容:「不支援的檔案格式 (可能來自Telegram)」")

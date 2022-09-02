@@ -204,6 +204,8 @@ async def text_normal_message(msg: interactions.Message):
         await channel.send(doc['Content'])
     elif doc['Type'] == 2:
         img = await GetImg(doc, doc['Summarization'])
+        if img is None:
+            return
         await channel.send(files=img)
     guild = await msg.get_guild()
     logger.info(

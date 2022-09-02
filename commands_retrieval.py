@@ -31,6 +31,8 @@ class commands_update(interactions.Extension):
                         await ctx.channel.send("\n".join(to_send))
                     elif doc['Type'] == 2:
                         img = await GetImg(doc, doc['Summarization'])
+                        if img is None:
+                            return await send_random(col, CN)
                         await ctx.channel.send("\n".join(to_send), files=img)
                     else:
                         return await send_random(col, CN)
@@ -104,6 +106,9 @@ class commands_update(interactions.Extension):
                 await ctx.author.send("\n".join(to_send))
             elif doc['Type'] == 2:
                 img = await GetImg(doc, doc['Summarization'])
+                if img is None:
+                    await ctx.author.send("傳不出來 DC在搞")
+                    continue
                 await ctx.author.send("\n".join(to_send), files=img)
             else:
                 Rst_Count -= 1
@@ -151,6 +156,8 @@ class commands_update(interactions.Extension):
                 await SENDER.send("\n".join(to_send))
             elif doc['Type'] == 2:
                 img = await GetImg(doc, doc['Summarization'])
+                if img is None:
+                    await SENDER.send("傳不出來 DC在搞")
                 await SENDER.send("\n".join(to_send), files=img)
             else:
                 to_send.append("內容:「不支援的檔案格式 (可能來自telegram)」")
