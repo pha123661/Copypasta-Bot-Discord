@@ -81,6 +81,7 @@ def TextSummarization(content: str) -> str:
         except KeyError:
             logger.info(f"TextSum key error, rst: {rst}")
             time.sleep(3)  # sec
+    return ""
 
 
 IC_provider = [
