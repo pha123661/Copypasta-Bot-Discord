@@ -25,7 +25,7 @@ Translator = googletrans.Translator()
 
 
 @awaitable()
-def TestHit(query: str, *keylist) -> int:
+def TestHit(query: str, *key_list) -> int:
     # query_set = GenerateJieba(query)
     # keys = GenerateJieba(doc['Keyword'])
     # keys |= GenerateJieba(doc['Summarization'])
@@ -33,25 +33,25 @@ def TestHit(query: str, *keylist) -> int:
     #     # hit
     #     return True
     # return False
-    QuerySet = re.sub(f"[{punc}\n]+", "", query)
-    QuerySet = {w for w in jieba.cut(query)} - stop_words
-    QuerySet.add(query)
+    query_set = re.sub(f"[{punc}\n]+", "", query)
+    query_set = {w for w in jieba.cut(query)} - stop_words
+    query_set.add(query)
 
-    keylist = sorted(keylist, key=len)
+    key_list = sorted(key_list, key=len)
     ALL_MAX = 0
-    for Key in keylist:
-        if Key == "":
+    for key in key_list:
+        if key == "":
             continue
-        Key = re.sub(f"[{punc}\n]+", "", Key)
-        KeySet = {w for w in jieba.analyse.extract_tags(Key, topK=7)}
-        KeySet = KeySet - stop_words
-        KeySet.add(Key)
+        key = re.sub(f"[{punc}\n]+", "", key)
+        key_set = {w for w in jieba.analyse.extract_tags(key, topK=7)}
+        key_set = key_set - stop_words
+        key_set.add(key)
 
-        rst = QuerySet & KeySet
+        rst = query_set & key_set
         sum = 0
         for r in rst:
             sum += len(r)
-        sum /= len(query)
+        sum = max(sum / len(query), sum / len(key))
         ALL_MAX = max(ALL_MAX, sum)
     return ALL_MAX
 
