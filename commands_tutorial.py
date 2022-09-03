@@ -1,5 +1,6 @@
 import os
 import interactions
+from utils import ctx_func_handler
 from config import CONFIG
 from interactions.ext.persistence import PersistentCustomID, PersistenceExtension, extension_persistent_component
 
@@ -185,6 +186,7 @@ class commands_tutorial(PersistenceExtension):
         self.tutorial_pages = [self.what_components, self.how_components]
 
     @interactions.extension_command()
+    @ctx_func_handler
     async def example(self, ctx: interactions.CommandContext):
         """觀看 bot 的使用說明和指令介紹"""
         try:

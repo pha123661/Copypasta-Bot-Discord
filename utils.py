@@ -11,6 +11,7 @@ import string
 import asyncio
 from config import logger
 from typing import Dict
+from functools import wraps
 
 dotenv.load_dotenv()
 tgbot = telegram.Bot(os.getenv("APITGTOKEN"))
@@ -20,6 +21,31 @@ task_dict: Dict[str, asyncio.Task] = dict()
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
+
+
+def ctx_func_handler(fn):
+    """ctx arg should be first or second parameter"""
+    @wraps(fn)
+    async def wrapper(*args, **kw):
+        try:
+            return await fn(*args, **kw)
+        except Exception as e:
+            fail_prompt = f"失敗了, 一定又是煙卷搞的鬼 請再試一次"
+            logger.error(e)
+            for arg in args:
+                if isinstance(arg, interactions.CommandContext):
+                    await arg.send(fail_prompt)
+                    return
+                elif isinstance(arg, interactions.Message):
+                    channel = await arg.get_channel()
+                    await channel.send(fail_prompt)
+                    return
+
+            logger.info(
+                f"what type is this? {[(type(arg), arg) for arg in args]}")
+            return
+
+    return wrapper
 
 
 async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
