@@ -82,7 +82,7 @@ class commands_update(interactions.Extension):
         heap = list()  # max heap
         async for doc in cursor:
             if doc['Type'] == 1:
-                priority = await TestHit(query, doc['Keyword'], doc['Content'])
+                priority = await TestHit(query, doc['Keyword'], doc['Summarization'], doc['Content'])
             else:
                 priority = await TestHit(query, doc['Keyword'], doc['Summarization'])
             if priority > 0:
