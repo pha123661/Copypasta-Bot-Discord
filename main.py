@@ -207,6 +207,8 @@ async def text_normal_message(msg: interactions.Message):
         if img is None:
             return
         await channel.send(files=img)
+    else:
+        return
     guild = await msg.get_guild()
     logger.info(
         f"{guild.name}, #{guild.member_count}, Hit:{doc['Keyword']} normal msg w/ priority of {max(priorities)/len(Query)}")
