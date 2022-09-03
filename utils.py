@@ -158,7 +158,7 @@ async def GetMaskedNameByID(client, FromID: int) -> str:
 
 def argmax(pairs):
     # given an iterable of pairs return the key corresponding to the greatest value
-    return max(pairs, key=lambda x: x[1])[0]
+    return max(pairs, key=lambda x: x[1] + random.random())[0]
 
 
 def argmax_index(values):
