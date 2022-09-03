@@ -214,6 +214,49 @@ class commands_tutorial(PersistenceExtension):
             except FileNotFoundError:
                 await ctx.send(f.read())
 
+    @interactions.extension_command()
+    async def info(self, ctx: interactions.CommandContext) -> None:
+        """取得bot的邀請連結 或和開發者聯繫(抱怨)"""
+        embed = interactions.Embed(
+            title="關於bot",
+            description="""
+            不管有任何意見, 抱怨, 建議 都可以直接寄信給我 OR 透過下方連結讓我知道哦
+Email: `swli-iagents.9vj9n@slmail.me`""",
+            url="https://github.com/pha123661/Hok_tse_bun_dcbot",
+            footer=interactions.EmbedFooter(
+                text="一大坨迷因感謝您的使用",
+                icon_url="https://imgur.com/LdjownE.jpg",
+            ),
+        )
+        await ctx.send(
+            "",
+            embeds=embed,
+            components=[
+                interactions.ActionRow.new(
+                    interactions.Button(
+                        style=interactions.ButtonStyle.LINK,
+                        label="邀請 bot",
+                        url=r"https://discord.com/api/oauth2/authorize?client_id=1011172667426095125&permissions=534723951680&scope=applications.commands%20bot"
+                    ),
+                    interactions.Button(
+                        style=interactions.ButtonStyle.LINK,
+                        label='Telegram 版本',
+                        url=r'https://t.me/HokTseBunBot'
+                    ),
+                    interactions.Button(
+                        style=interactions.ButtonStyle.LINK,
+                        label="我的主頁",
+                        url=r"https://github.com/pha123661"
+                    ),
+                    interactions.Button(
+                        style=interactions.ButtonStyle.LINK,
+                        label="功能建議",
+                        url=r"https://github.com/pha123661/Hok_tse_bun_dcbot/issues"
+                    ),
+                ),
+            ]
+        )
+
 
 def setup(client):
     commands_tutorial(client)
