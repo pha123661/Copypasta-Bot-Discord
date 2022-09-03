@@ -51,6 +51,7 @@ def TestHit(query: str, *keylist) -> int:
         sum = 0
         for r in rst:
             sum += len(r)
+        sum /= len(query)
         ALL_MAX = max(ALL_MAX, sum)
     return ALL_MAX
 

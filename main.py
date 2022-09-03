@@ -227,7 +227,7 @@ async def text_normal_message(msg: interactions.Message):
     priorities = await asyncio.gather(
         *[TestHit(Query, doc['Keyword'], doc['Summarization']) for doc in docs])
 
-    if max(priorities) / len(Query) < CONFIG['SETTING']['BOT_TALK_THRESHOLD']:
+    if max(priorities) < CONFIG['SETTING']['BOT_TALK_THRESHOLD']:
         return
 
     doc = docs[argmax_index(priorities)]
