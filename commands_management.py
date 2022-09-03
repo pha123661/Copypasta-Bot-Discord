@@ -23,6 +23,8 @@ class command_management(interactions.Extension):
             ChatStatus[GuildID].DcDisabledChan.append(ChanID)
             await DisableDCChan(GuildID, ChanID)
             await ctx.send("我閉嘴了啦")
+            guild = await ctx.get_guild()
+            logger.info(f"shutup in {guild}, ppl#: {guild.member_count}")
             return
         else:
             ChatStatus[GuildID].DcDisabledChan.remove(ChanID)
