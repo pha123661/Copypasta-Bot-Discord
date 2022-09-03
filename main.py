@@ -116,9 +116,30 @@ async def image_add_message(msg: interactions.Message):
         await channel.send("傳過了啦 腦霧?")
         return
 
-    to_be_deleted_msg = await msg.reply("運算中……")
+    sum_task = asyncio.create_task(ImageCaptioning(encoded_image))
+    while True:
+        task_name = id_generator()
+        if task_name in task_dict:
+            continue
+        else:
+            task_dict[task_name] = sum_task
+            break
+    to_be_deleted_msg = await msg.reply(
+        "運算中……",
+        components=interactions.Button(
+            style=interactions.ButtonStyle.DANGER,
+            label="取消運算",
+            custom_id=str(
+                PersistentCustomID(
+                    cipher=bot,
+                    tag="cancel_task",
+                    package=task_name,
+                )
+            )
+        )
+    )
     # insert
-    Summarization = await ImageCaptioning(encoded_image)
+    Summarization = await sum_task
 
     Rst = await InsertHTB(Col, {
         "Type": Type,
@@ -167,6 +188,16 @@ async def image_add_message(msg: interactions.Message):
     if to_be_modified_msg is not None:
         await asyncio.sleep(30)
         await to_be_modified_msg.edit(components=[])
+
+
+@bot.persistent_component("cancel_task")
+async def cancel_task(ctx: interactions.CommandContext, task_name: str):
+    try:
+        task = task_dict[task_name]
+        task.cancel()
+        await ctx.edit("已取消", components=[])
+    except Exception as e:
+        await ctx.edit(f"取消失敗: {e}")
 
 
 @bot.persistent_component("accidentally_delete")

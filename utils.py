@@ -8,16 +8,21 @@ import dotenv
 import aiohttp
 import random
 import string
+import asyncio
 from config import logger
+from typing import Dict
 
 dotenv.load_dotenv()
 tgbot = telegram.Bot(os.getenv("APITGTOKEN"))
+# name = str(Taskobj)
+task_dict: Dict[str, asyncio.Task] = dict()
+
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
-    def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
-
     async with aiohttp.ClientSession() as session:
         async with session.get(URL) as resp:
             try:
