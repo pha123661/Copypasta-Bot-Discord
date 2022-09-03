@@ -209,7 +209,6 @@ async def handle_accidentally_image(ctx: interactions.CommandContext, _id: str):
         await ctx.edit(f"刪除失敗: {e}")
 
 
-@ctx_func_handler
 async def text_normal_message(msg: interactions.Message):
     channel = await msg.get_channel()
     GuildID = int(msg.guild_id)

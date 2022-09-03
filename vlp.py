@@ -26,13 +26,6 @@ Translator = googletrans.Translator()
 
 @awaitable()
 def TestHit(query: str, *key_list) -> int:
-    # query_set = GenerateJieba(query)
-    # keys = GenerateJieba(doc['Keyword'])
-    # keys |= GenerateJieba(doc['Summarization'])
-    # if len(query_set & keys) > 0 or query in doc['Content']:
-    #     # hit
-    #     return True
-    # return False
     query_set = re.sub(f"[{punc}\n]+", "", query)
     query_set = {w for w in jieba.cut(query)} - stop_words
     query_set.add(query)
@@ -40,9 +33,9 @@ def TestHit(query: str, *key_list) -> int:
     key_list = sorted(key_list, key=len)
     ALL_MAX = 0
     for key in key_list:
-        if key == "":
-            continue
         key = re.sub(f"[{punc}\n]+", "", key)
+        if len(key) == 0:
+            continue
         key_set = {w for w in jieba.analyse.extract_tags(key, topK=7)}
         key_set = key_set - stop_words
         key_set.add(key)
@@ -51,6 +44,7 @@ def TestHit(query: str, *key_list) -> int:
         sum = 0
         for r in rst:
             sum += len(r)
+
         sum = max(sum / len(query), sum / len(key))
         ALL_MAX = max(ALL_MAX, sum)
     return ALL_MAX
