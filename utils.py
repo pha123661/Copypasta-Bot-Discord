@@ -31,6 +31,8 @@ def ctx_func_handler(fn):
     async def wrapper(*args, **kw):
         try:
             return await fn(*args, **kw)
+        except ValueError:
+            pass # IO on closed file error, can't fix and has no plan on fixing it 🤔
         except Exception as e:
             fail_prompt = f"失敗了, 一定又是煙卷搞的鬼 請再試一次"
             logger.error(e)

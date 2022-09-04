@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import interactions
 
 from config import CONFIG
