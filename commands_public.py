@@ -16,6 +16,7 @@ class commands_public(interactions.Extension):
     @interactions.extension_command(dm_permission=False)
     @interactions.option(description="Telegram 的 使用者ID, 可以在 Telegram 對 bot 輸入 /userid 以取得")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def linktg(self, ctx: interactions.CommandContext, tguserid: int):
         """和 Telegram 帳號進行連結, 兩個帳號可共享貢獻值"""
         await ctx.defer()
@@ -31,6 +32,7 @@ class commands_public(interactions.Extension):
     @interactions.extension_command(dm_permission=False)
     @interactions.option(description="想要設定的暱稱, 設定後可以更改")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def nickname(self, ctx: interactions.CommandContext, nickname: str):
         """設定自己的暱稱, 跨平台時才能顯示哦! (不然會是“DC使用者”)"""
         if not 1 <= len(nickname) <= 7:
@@ -47,6 +49,7 @@ class commands_public(interactions.Extension):
 
     @interactions.extension_command(dm_permission=False)
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def toggle(self, ctx: interactions.CommandContext):
         """在 私人模式 和 公共模式 之間切換"""
         GuildID = int(ctx.guild_id)
@@ -72,9 +75,6 @@ class commands_public(interactions.Extension):
 
         UserID = int(ctx.author.id)
         # private -> public
-        if UserStatus[UserID].Banned:
-            await ctx.send("你被ban了 不能開啓公共模式 覺得莫名奇妙的話也一定是bug 請找作者💩")
-            return
         ChatStatus[GuildID].Global = True
         await UpdateChatStatus(ChatStatus[GuildID])
 
@@ -82,6 +82,7 @@ class commands_public(interactions.Extension):
 
     @interactions.extension_command(dm_permission=False)
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def status(self, ctx: interactions.CommandContext):
         """查看目前模式 和 KO榜"""
         # get leaderboard
@@ -179,6 +180,7 @@ class commands_public(interactions.Extension):
 
     @interactions.extension_command(dm_permission=False)
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def dump(self, ctx: interactions.CommandContext):
         """將目前私人資料庫內由**自己**新增的內容複製到公共資料庫"""
         await ctx.defer()

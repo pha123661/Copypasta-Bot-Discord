@@ -25,6 +25,18 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
+def ext_cmd_ban_checker(fn):
+    """checks if user is banned"""
+    @wraps(fn)
+    async def wrapper(self, ctx: interactions.CommandContext, *args, **kw):
+        DCUserID = int(ctx.author.id)
+        if UserStatus[DCUserID].Banned:
+            await ctx.send("恭喜你🎉 因爲在公共資料庫亂搞 (EX:罵人 可是不好笑) 你已被限制使用", ephemeral=True)
+            return
+        return await fn(self, ctx, *args, **kw)
+    return wrapper
+
+
 def ctx_func_handler(fn):
     """ctx arg should be first or second parameter"""
     @wraps(fn)
@@ -32,8 +44,10 @@ def ctx_func_handler(fn):
         try:
             return await fn(*args, **kw)
         except ValueError:
-            pass # IO on closed file error, can't fix and has no plan on fixing it 🤔
+            pass  # IO on closed file error, can't fix and has no plan on fixing it 🤔
         except Exception as e:
+            if hasattr(e, "code") and e.code == 40060:
+                return
             fail_prompt = f"失敗了, 一定又是煙卷搞的鬼 請再試一次"
             logger.error(e)
             for arg in args:

@@ -6,7 +6,7 @@ from interactions.ext.persistence import (PersistenceExtension,
                                           extension_persistent_component)
 
 from config import CONFIG
-from utils import ctx_func_handler
+from utils import ctx_func_handler, ext_cmd_ban_checker
 
 
 class commands_tutorial(PersistenceExtension):
@@ -191,6 +191,7 @@ class commands_tutorial(PersistenceExtension):
 
     @interactions.extension_command()
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def example(self, ctx: interactions.CommandContext):
         """觀看 bot 的使用說明和指令介紹"""
         try:
@@ -201,10 +202,12 @@ class commands_tutorial(PersistenceExtension):
         await ctx.send("請選擇要觀看的說明", components=self.tutorial_pages[0])
 
     @extension_persistent_component("TB_P_Swap")
+    @ext_cmd_ban_checker
     async def TB_PageSwap(self, ctx: interactions.CommandContext, page: int) -> None:
         await ctx.edit(components=self.tutorial_pages[page])
 
     @extension_persistent_component("Tutorial_Bottons")
+    @ext_cmd_ban_checker
     async def tutorial_handler(self, ctx: interactions.CommandContext, command: str) -> None:
         """Sends tutorial"""
         if command == "CANCL":
@@ -219,6 +222,7 @@ class commands_tutorial(PersistenceExtension):
                 await ctx.send(f.read())
 
     @interactions.extension_command()
+    @ext_cmd_ban_checker
     async def info(self, ctx: interactions.CommandContext) -> None:
         """取得bot的邀請連結 或和開發者聯繫(抱怨)"""
         embed = interactions.Embed(

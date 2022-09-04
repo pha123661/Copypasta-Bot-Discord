@@ -26,6 +26,7 @@ class commands_update(interactions.Extension):
     @interactions.option(description="複製文, 和圖片擇一傳送即可, 長度 < 6 的複製文不會生成摘要")
     @interactions.option(description="圖片, 和複製文擇一傳送即可")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def add(self, ctx: interactions.CommandContext, keyword: str, content: str = None, media: interactions.api.models.message.Attachment = None):
         """新增複製文/圖"""
         if content is None and media is None:
@@ -135,6 +136,7 @@ class commands_update(interactions.Extension):
     @interactions.extension_command(dm_permission=False)
     @interactions.option(description="欲刪除複製文的關鍵字")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def delete(self, ctx: interactions.CommandContext, keyword: str):
         """刪除複製文, 若有重複關鍵字 最多只會顯示5篇"""
         if not 2 <= len(keyword) <= 30:
@@ -175,6 +177,7 @@ class commands_update(interactions.Extension):
 
     @interactions.extension_component("deletion_confirmation")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def confirmation_handler(self, ctx: interactions.CommandContext, selected_values: List[str]):
         async def send_confirmation_by_id(_id: str, head: str = "") -> bool:
             if ChatStatus[int(ctx.guild_id)].Global:
@@ -247,6 +250,7 @@ class commands_update(interactions.Extension):
 
     @interactions.extension_component("deletion_cancel")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def deletion_candel(self, ctx: interactions.CommandContext):
         if int(ctx.guild_id) in self.QueuedDeletes:
             del self.QueuedDeletes[int(ctx.guild_id)]
@@ -267,6 +271,7 @@ class commands_update(interactions.Extension):
 
     @interactions.extension_component("deletion")
     @ctx_func_handler
+    @ext_cmd_ban_checker
     async def deletion_handler(self, ctx: interactions.CommandContext):
         await ctx.edit(components=interactions.ActionRow.new(
             interactions.Button(

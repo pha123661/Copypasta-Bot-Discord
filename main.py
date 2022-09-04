@@ -57,12 +57,6 @@ async def on_message_create(msg: interactions.Message):
         return
 
 
-# @bot.event()
-# async def on_component(ctx: interactions.CommandContext):
-#     if ctx.data.custom_id.startswith("EXP "):
-#         await tutorial_handler(ctx, ctx.data.custom_id[4:])
-
-
 @bot.event()
 async def on_guild_create(guild: interactions.Guild):
     GuildID = int(guild.id)
