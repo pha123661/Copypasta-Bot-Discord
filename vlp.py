@@ -1,16 +1,16 @@
 # coding: utf-8
-import string
 import re
+import string
 import time
+from random import choice
+
+import aiohttp
 import googletrans
 import hfapi
 import jieba
 import jieba.analyse
-import aiohttp
 from awaits.awaitable import awaitable
 
-
-from random import choice
 from config import CONFIG, logger
 
 # get stop_words for jieba

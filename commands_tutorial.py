@@ -1,8 +1,12 @@
 import os
+
 import interactions
-from utils import ctx_func_handler
+from interactions.ext.persistence import (PersistenceExtension,
+                                          PersistentCustomID,
+                                          extension_persistent_component)
+
 from config import CONFIG
-from interactions.ext.persistence import PersistentCustomID, PersistenceExtension, extension_persistent_component
+from utils import ctx_func_handler
 
 
 class commands_tutorial(PersistenceExtension):

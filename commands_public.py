@@ -1,7 +1,7 @@
+from datetime import datetime, timezone
+
 import interactions
 import pymongo
-from pprint import pprint
-from datetime import datetime, timezone
 
 import config
 from config import CONFIG, logger

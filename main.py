@@ -1,17 +1,17 @@
 # coding: utf-8
-import interactions
 import base64
-import aiohttp
 from hashlib import sha256
+
+import aiohttp
+import interactions
 from interactions.ext.persistence import PersistentCustomID
 
 import config
+from commands_update import delete_from_col_by_id
+from config import CONFIG, logger
 from database import *
 from utils import *
-from config import CONFIG, logger
-from vlp import TestHit, ImageCaptioning
-from commands_update import delete_from_col_by_id
-
+from vlp import ImageCaptioning, TestHit
 
 bot = interactions.Client(
     token=CONFIG['API']['DC']['TOKEN'],

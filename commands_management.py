@@ -1,8 +1,7 @@
-import interactions
-import pymongo
 from pprint import pprint
 
-import config
+import interactions
+
 from config import CONFIG
 from database import *
 from utils import *

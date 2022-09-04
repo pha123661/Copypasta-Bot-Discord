@@ -1,17 +1,19 @@
 # coding: utf-8
-import interactions
+import asyncio
 import io
-from database import *
-import telegram
 import os
-import dotenv
-import aiohttp
 import random
 import string
-import asyncio
-from config import logger
-from typing import Dict
 from functools import wraps
+from typing import Dict
+
+import aiohttp
+import dotenv
+import interactions
+import telegram
+
+from config import logger
+from database import *
 
 dotenv.load_dotenv()
 tgbot = telegram.Bot(os.getenv("APITGTOKEN"))

@@ -1,14 +1,15 @@
 # coding: utf-8
+import heapq
+import random
+
 import interactions
 import pymongo
-import random
-import heapq
 
 import config
 from config import logger
 from database import *
-from vlp import TestHit
 from utils import *
+from vlp import TestHit
 
 
 class commands_update(interactions.Extension):
