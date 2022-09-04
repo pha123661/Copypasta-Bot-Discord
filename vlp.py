@@ -35,7 +35,7 @@ def TestHit(query: str, *key_list) -> float:
     key_list = sorted(key_list, key=len)
     ALL_MAX = 0.0
     for key in key_list:
-        if query in key:
+        if key in query:
             return 1.0
         key = re.sub(f"[{punc}\n]+", "", key)
         if len(key) == 0:
