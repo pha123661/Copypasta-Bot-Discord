@@ -1,11 +1,11 @@
 # coding: utf-8
-import pymongo
-import motor.motor_asyncio
 import asyncio
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
 from typing import *
 
+import motor.motor_asyncio
+import pymongo
 
 from config import CONFIG
 
@@ -178,8 +178,8 @@ async def EnableDCChan(GuildID: int, ChanID: int) -> bool:
 
 # ChatStatus[int(ctx.guild_id)] = ChatStatusEntity()
 # UserStatus[int(ctx.author.id)] = UserStatusEntity()
-ChatStatus: List[ChatStatusEntity]
-UserStatus: List[UserStatusEntity]
+ChatStatus: keydefaultdict
+UserStatus: keydefaultdict
 
 loop = asyncio.get_event_loop()
 GLOBAL_DB, DB, GLOBAL_COL = loop.run_until_complete(InitDB())
