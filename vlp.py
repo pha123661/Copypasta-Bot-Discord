@@ -26,19 +26,17 @@ Translator = googletrans.Translator()
 
 @awaitable()
 def TestHit(query: str, *key_list) -> float:
-    if len(query) == 0:
-        return 0
     query = re.sub(f"[{punc}\n]+", "", query)
     query_set = {w for w in jieba.cut_for_search(query)} \
         & {w for w in jieba.analyse.extract_tags(query, topK=7)} \
         - stop_words
     query_set.add(query)
+    if len(query) == 0:
+        return 0
 
     key_list = sorted(key_list, key=len)
     ALL_MAX = 0.0
     for key in key_list:
-        if len(key) == 0:
-            continue
         if key in query:
             return 1.0
         key = re.sub(f"[{punc}\n]+", "", key)
