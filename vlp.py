@@ -32,12 +32,12 @@ def TestHit(query: str, *key_list) -> float:
         - stop_words
     query_set.add(query)
     if len(query) == 0:
-        return 0
+        return 0.0
 
     key_list = sorted(key_list, key=len)
     ALL_MAX = 0.0
     for key in key_list:
-        if key in query:
+        if len(key) > 1 and key in query:
             return 1.0
         key = re.sub(f"[{punc}\n]+", "", key)
         if len(key) == 0:
