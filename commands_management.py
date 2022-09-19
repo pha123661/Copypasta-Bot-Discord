@@ -1,3 +1,4 @@
+import urllib
 from math import ceil
 
 import interactions
@@ -44,6 +45,7 @@ class command_management(interactions.Extension):
 
 
 def get_emo_pic(top_word, bottom_word) -> str:
+    url = "https://yurafuca.com/5000choyen/result.html?"
     top_length, bottom_length = 0, 0
     top_len_dict = keydefaultdict(
         lambda c: 0.6 if c.islower() or c.isdecimal() else 1.0,
@@ -74,7 +76,8 @@ def get_emo_pic(top_word, bottom_word) -> str:
     if top_length <= 2 or bottom_length <= 2:
         bx += 100
         width += 100
-    return f"https://yurafuca.com/5000choyen/result.html?top={top_word}&bottom={bottom_word}&bx={ceil(bx)}&order=false&color=false&width={ceil(width)}&height=260"
+    payload = f"top={urllib.parse.quote(top_word)}&bottom={urllib.parse.quote(bottom_word)}&bx={ceil(bx)}&order=false&color=false&width={ceil(width)}&height=260"
+    return url + payload
 
 
 def setup(client):
