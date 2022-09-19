@@ -66,7 +66,7 @@ def ctx_func_handler(fn):
     return wrapper
 
 
-async def GetImgByURL(URL: str, description: str = None) -> interactions.File:
+async def GetImgByURL(URL: str, description: str = "") -> interactions.File:
     async with aiohttp.ClientSession() as session:
         async with session.get(URL) as resp:
             try:
