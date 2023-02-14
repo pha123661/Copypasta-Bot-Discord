@@ -10,7 +10,7 @@
 還在煩惱想找某篇複製文可是找不到嗎？\
 機器人來幫你：👉[馬上開始使用](https://discord.com/api/oauth2/authorize?client_id=1011172667426095125&permissions=534723951680&scope=applications.commands%20bot)👈 （記得給bot所有權限歐）\
 一個用於 Discord 的複製文機器人! \
-永遠免費、開源，，要加功能可以聯絡我 \
+永遠免費、開源，要加功能可以聯絡我
 
 
 # 功能
