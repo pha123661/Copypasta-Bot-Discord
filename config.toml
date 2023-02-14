@@ -10,22 +10,22 @@
     IMG=2
     ANI=3
     VID=4
-    
 
+# This bot supports dot-env files
 [API]
   [API.DC]
-    TOKEN = "" # should be stored as environment variable
+    TOKEN = "" # is suggested to be stored as environment variable
   [API.HF]
-    TOKENs = [""] # should be stored as environment variable
+    TOKENs = [""] # is suggested to be stored as environment variable, format is "TOKEN1 TOKEN2" (seperated with a single space)
     SUM_MODEL = "csebuetnlp/mT5_multilingual_XLSum"
-    MT_MODEL = "Helsinki-NLP/opus-mt-en-zh" # not used, using google translation atm
+    MT_MODEL = "Helsinki-NLP/opus-mt-en-zh" # currently not used, using google translation atm
   [API.MONGO]
-    URI = ""# should be stored as environment variable
+    URI = ""# is suggested to be stored as environment variable
 [DB]
-  DB_NAME = "" # should be stored as environment variable
-  GLOBAL_DB_NAME = "" # should be stored as environment variable
+  DB_NAME = "" # is suggested to be stored as environment variable
+  GLOBAL_DB_NAME = "" # is suggested to be stored as environment variable
   CFormat = "%d-Copypasta" # args = ChatID int64
-  
+
   GLOBAL_COL = "0_GLOBAL-Copypasta"
   CHAT_STATUS = "0_ChatStatus"
   USER_STATUS = "0_UserStatus"

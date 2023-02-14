@@ -1,20 +1,26 @@
 import logging
 import os
-import toml
-from pprint import pprint
-import dotenv
 import sys
+from pprint import pprint
+
+import dotenv
+import toml
 
 dotenv.load_dotenv()
 
 
 def InitConfig(path: str) -> dict:
     config = toml.load(path)
-    config['API']['DC']['TOKEN'] = os.getenv("APIDCTOKEN")
-    config['API']['HF']['TOKENs'] = (os.getenv("APIHFTOKENs")).split(" ")
-    config['API']['MONGO']['URI'] = os.getenv("APIMONGOURI")
-    config['DB']['DB_NAME'] = os.getenv("DBDB_NAME")
-    config['DB']['GLOBAL_DB_NAME'] = os.getenv("DBGLOBAL_DB_NAME")
+    if os.getenv("APIDCTOKEN"):
+        config['API']['DC']['TOKEN'] = os.getenv("APIDCTOKEN")
+    if os.getenv("APIHFTOKENs"):
+        config['API']['HF']['TOKENs'] = (os.getenv("APIHFTOKENs")).split(" ")
+    if os.getenv("APIMONGOURI"):
+        config['API']['MONGO']['URI'] = os.getenv("APIMONGOURI")
+    if os.getenv("DBDB_NAME"):
+        config['DB']['DB_NAME'] = os.getenv("DBDB_NAME")
+    if os.getenv("DBGLOBAL_DB_NAME"):
+        config['DB']['GLOBAL_DB_NAME'] = os.getenv("DBGLOBAL_DB_NAME")
     print("------------------------")
     print("Loaded config:")
     pprint(config)
