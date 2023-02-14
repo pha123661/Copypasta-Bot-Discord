@@ -1,7 +1,7 @@
 ![ICON](https://github.com/pha123661/Hok_tse_bun_dcbot/blob/master/icons/bot%20icon.jpg?raw=true)
 <p align="center">
   <span>English</span> |
-  <a href="www.google.com">中文</a> |
+  <a href="www.google.com">中文</a>
 </p>
 
 # What Is This?
