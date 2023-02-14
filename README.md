@@ -1,3 +1,9 @@
+![ICON](https://github.com/pha123661/Hok_tse_bun_dcbot/blob/master/icons/bot%20icon.jpg?raw=true)
+<p align="center">
+  <span>English</span> |
+  <a href="www.google.com">中文</a> |
+</p>
+
 # What Is This?
 A "Ho̍k tsè bûn" / "copypasta" / "複製文" bot for Discord  
 👉[Start using the bot](https://discord.com/api/oauth2/authorize?client_id=1011172667426095125&permissions=534723951680&scope=applications.commands%20bot)👈, please authorize the bot to be granted all necessary permissions that it has requested.
