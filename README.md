@@ -1,5 +1,6 @@
 # What Is This?
-A "Ho̍k tsè bûn" / "copypasta" / "複製文" bot for Discord, ~[Invite me](https://discord.com/api/oauth2/authorize?client_id=1011172667426095125&permissions=534723951680&scope=applications.commands%20bot)~(my VPS expired)  
+A "Ho̍k tsè bûn" / "copypasta" / "複製文" bot for Discord  
+👉[Start using the bot](https://discord.com/api/oauth2/authorize?client_id=1011172667426095125&permissions=534723951680&scope=applications.commands%20bot)👈, please authorize the bot to be granted all necessary permissions that it has requested.
 
 # Features
 * Post related copypasta for you whenever the bot detects matching keyword  
