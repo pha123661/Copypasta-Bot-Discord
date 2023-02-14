@@ -135,7 +135,7 @@ class commands_update(interactions.Extension):
     async def recent(self, ctx: interactions.CommandContext, number: int = 3):
         """顯示公共資料庫最新加入的 ”number“ 篇, 預設爲 3 篇"""
         if not ChatStatus[int(ctx.guild_id)].Global:
-            await ctx.send("執行失敗: 此指令只能在公共模式下執行")
+            await ctx.send("執行失敗: 此指令只能在公共模式下執行，可以使用 `/toggle` 指令來切換爲公共模式")
             return
         await ctx.defer()
         col = GLOBAL_COL
