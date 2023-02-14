@@ -41,7 +41,6 @@
 ## --- 因爲我很懶 下方文件只有英文版 ---
 
 # Deploy
-
 1. Setup ``config.toml`` following section "Config Setup"
 2. Setup Environment variables following section "Environment Variable Setup"
 3. Run
@@ -52,38 +51,38 @@
 
 
 # Environment Variable Setup
-Environment Variable: ``APIDCTOKEN``
-Description: API token for your Discord bot
+Environment Variable: ``APIDCTOKEN``\
+Description: API token for your Discord bot\
 Default value= ``YOUR_DISCORD_BOT_SECRET``
 
 ---
 
-Environment Variable: ``APITGTOKEN``
-Description: API token for your telegram bot, this is used to retrieve images uploaded at Telegram
+Environment Variable: ``APITGTOKEN``\
+Description: API token for your telegram bot, this is used to retrieve images uploaded at Telegram\
 Default value: ``"YOUR_TELEGRAM_API_TOKEN"`` (no this does not work)
 
 ---
 
-Environment Variable: ``APIHFTOKENs``
-Description: A list of huggingface tokens, bot switchs token whenever it fails (ex: quota exceeded)
+Environment Variable: ``APIHFTOKENs``\
+Description: A list of huggingface tokens, bot switchs token whenever it fails (ex: quota exceeded)\
 Default value= ``["YOUR_HUGGINGFACETOKEN1", "YOUR_HUGGINGFACETOKEN2",]``
 
 ---
 
-Environment Variable: ``APIMONGOURI``
-Description: URI to connect to your mongodb
+Environment Variable: ``APIMONGOURI``\
+Description: URI to connect to your mongodb\
 Default value= ``"mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]"``
 
 ---
 
-Environment Variable: ``DBDB_NAME``
-Description: Database name for private database
+Environment Variable: ``DBDB_NAME``\
+Description: Database name for private database\
 Default value= ``"Testing-HokTseBunBot-DC"``
 
 ---
 
-Environment Variable: ``DBGLOBAL_DB_NAME``
-Description: Database name for public database
+Environment Variable: ``DBGLOBAL_DB_NAME``\
+Description: Database name for public database\
 Default value= ``"Testing-Global"``
 
 ---
@@ -92,8 +91,8 @@ Default value= ``"Testing-Global"``
 The config file, config.toml, is in toml format
 ## [SETTING]
 
-Setting: ``LOG_FILE``
-Description: Name of your log file
+Setting: ``LOG_FILE``\
+Description: Name of your log file\
 Default value: ``"../log.log"``
 
 ---
@@ -103,15 +102,15 @@ Default value: ``"../log.log"``
 
 ---
 
-Setting: ``SUM_MODEL``
-Description: The desired model to use for summarization, any model which supports summarization in your language should work
+Setting: ``SUM_MODEL``\
+Description: The desired model to use for summarization, any model which supports summarization in your language should work\
 Default value = ``"csebuetnlp/mT5_multilingual_XLSum"``
 Note: The model should support inference api to work.
 
 ---
 
-Setting: ``MT_MODEL``
-Description: The desired model to use for translation, any model which supports translation in your language should work
+Setting: ``MT_MODEL``\
+Description: The desired model to use for translation, any model which supports translation in your language should work\
 Default value = ``"Helsinki-NLP/opus-mt-en-zh"``
 Note: This setting isn't working since the bot uses google translate
 
